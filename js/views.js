@@ -361,7 +361,143 @@
       '<div class="bag-layout"><div class="bag-main">' + line + fulfil + "</div>" + summary + "</div></section>";
   };
 
-  // ---- S6–S8 (Phase 3) -------------------------------------------------------
+  // ---- S6 Checkout -----------------------------------------------------------
+
+  function inputField(state, f, ui) {
+    var id = "f-" + f.id;
+    var err = ui.errors && ui.errors[f.id];
+    var value = state[f.group][f.id] || "";
+    var describedBy = [];
+    if (f.hint) describedBy.push(id + "-hint");
+    if (err) describedBy.push(id + "-error");
+    var autocomplete = f.group === "payment" ? "off" : (f.autocomplete || "on");
+    return '<div class="field' + (err ? " has-error" : "") + '">' +
+      '<label for="' + id + '">' + esc(f.label) + (f.hint ? ' <span class="hint" id="' + id + '-hint">' + esc(f.hint) + "</span>" : "") + "</label>" +
+      '<input id="' + id + '" name="' + f.id + '" type="' + (f.type || "text") + '" data-field="' + f.id + '" data-group="' + f.group + '"' +
+      ' value="' + esc(value) + '" autocomplete="' + autocomplete + '"' + (f.inputmode ? ' inputmode="' + f.inputmode + '"' : "") +
+      (f.group === "payment" ? ' spellcheck="false"' : "") +
+      (err ? ' aria-invalid="true"' : "") + (describedBy.length ? ' aria-describedby="' + describedBy.join(" ") + '"' : "") + ">" +
+      fieldError(id + "-error", err) + "</div>";
+  }
+
+  /** Order summary used on S6: product, color, size and length, qty, method, store, date, total. */
+  function orderSummaryPanel(b, heading) {
+    return '<aside class="panel checkout-summary" aria-labelledby="order-h">' +
+      '<h2 id="order-h">' + heading + "</h2>" +
+      '<div class="order-items">' + AE.jeansSvg(b.productId, b.colorId, { label: "" }) +
+      '<div><p class="line-title">' + esc(itemName(b)) + "</p></div></div>" +
+      '<dl class="kv">' +
+      "<dt>Color</dt><dd>" + esc(colorName(b)) + "</dd>" +
+      "<dt>Size</dt><dd>" + esc(AE.fitLabel(b)) + "</dd>" +
+      "<dt>Quantity</dt><dd>" + b.qty + "</dd>" +
+      fulfilmentRows(b) + "</dl>" +
+      summaryLines(b) +
+      '<button type="button" class="link-button" data-action="backToBag" id="back-to-bag-summary">Edit in bag</button>' +
+      "</aside>";
+  }
+
+  V.S6 = function (state, ui) {
+    var b = state.bag;
+    var fields = AE.checkoutFields(b.method);
+    var summary = ui.summary && ui.summary.length
+      ? '<div class="error-summary" id="error-summary" role="alert">' +
+        "<h2>Please fix " + (ui.summary.length === 1 ? "1 problem" : ui.summary.length + " problems") + " to continue</h2><ul>" +
+        ui.summary.map(function (e) {
+          return '<li data-summary-field="' + e.field + '"><a href="#f-' + e.field + '" data-action="focusField" data-target="f-' + e.field + '">' + esc(e.message) + "</a></li>";
+        }).join("") + "</ul></div>"
+      : "";
+    var recoveryBanner = state.recovery.message
+      ? '<div class="notice notice-success" id="recovery-banner"><p>' + esc(state.recovery.message) + "</p></div>" : "";
+
+    var form = '<form class="panel" data-form="checkout" novalidate aria-labelledby="h1">' +
+      '<div class="notice notice-info fictional-note"><p>Use fictional details. Don’t enter real personal or payment information.</p>' +
+      '<button type="button" class="link-button" data-action="fillSample" id="fill-sample">Use sample details</button></div>' +
+      '<fieldset class="form-section"><legend>' + (b.method === "pickup" ? "Pickup person" : "Shipping address") + "</legend>" +
+      (b.method === "pickup"
+        ? fields.contact.map(function (f) { return inputField(state, f, ui); }).join("")
+        : fields.contact.slice(0, 3).map(function (f) { return inputField(state, f, ui); }).join("") +
+          '<div class="field-grid">' + fields.contact.slice(3).map(function (f) { return inputField(state, f, ui); }).join("") + "</div>") +
+      "</fieldset>" +
+      '<fieldset class="form-section"><legend>Payment (simulated card)</legend>' +
+      inputField(state, fields.payment[0], ui) +
+      '<div class="field-grid">' + inputField(state, fields.payment[1], ui) + inputField(state, fields.payment[2], ui) + "</div>" +
+      "</fieldset>" +
+      '<div class="actions-row"><button type="submit" class="btn btn-primary" id="checkout-submit" data-action="submitCheckout">' + esc(AE.checkoutButtonLabel(state)) + "</button></div>" +
+      "</form>";
+
+    return '<section data-state="S6" aria-labelledby="h1">' +
+      '<div class="page-head"><h1 id="h1">Checkout</h1>' +
+      '<button type="button" class="link-button" data-action="backToBag" id="back-to-bag">← Back to bag</button></div>' +
+      recoveryBanner + summary +
+      '<div class="checkout-layout">' + form + orderSummaryPanel(b, "Your order") + "</div></section>";
+  };
+
+  // ---- S7 Availability recovery [SIMULATED event] -----------------------------
+
+  V.S7 = function (state) {
+    var b = state.bag;
+    var blocked = state.recovery.blocked;
+    var failed = AE.getStore(blocked.storeId);
+    var variant = AE.variantLabel(b);
+    var c = state.checkout, pay = state.payment;
+    var digits = (pay.cardNumber || "").replace(/\D/g, "");
+
+    var alternatives = AE.STORES.filter(function (st) { return !AE.isStoreBlocked(state, st.id, b); });
+    var altList = '<ul class="store-list alt-stores">' + alternatives.map(function (st) {
+      return '<li class="store-row" data-store-row="' + st.id + '"><div><p class="store-name">' + esc(st.name) + "</p>" +
+        '<p class="store-meta">' + esc(st.distance) + " away · <strong>Ready for pickup " + esc(st.date) + "</strong></p></div>" +
+        '<div class="store-actions"><button type="button" class="btn btn-primary btn-sm" id="alt-' + st.id + '" data-action="chooseReplacement" data-store="' + st.id + '">Use this store for pickup<span class="visually-hidden">: ' + esc(st.name) + "</span></button></div></li>";
+    }).join("") + "</ul>";
+
+    var details = '<dl class="kv">' +
+      "<dt>Pickup person</dt><dd>" + esc(c.name) + "</dd>" +
+      "<dt>Email</dt><dd>" + esc(c.email) + "</dd>" +
+      "<dt>Phone</dt><dd>" + esc(c.phone) + "</dd>" +
+      "<dt>Payment</dt><dd>" + (digits ? "Simulated card ending " + esc(digits.slice(-4)) : "Simulated card") + "</dd></dl>";
+
+    return '<section data-state="S7" aria-labelledby="h1">' +
+      '<div class="panel recovery-alert" role="alert">' +
+      '<h1 id="h1">' + esc(failed.name) + " can no longer fulfill " + esc(variant) + "</h1>" +
+      "<p>Your order has not been placed. Nothing was lost: your item, pickup choice, and checkout details are saved. Choose another store to continue.</p>" +
+      "</div>" +
+      '<div class="checkout-layout">' +
+      '<div class="panel"><h2>Choose another pickup store</h2>' +
+      '<p class="muted">These stores can fulfill ' + esc(variant) + ".</p>" + altList +
+      '<div class="secondary-links"><button type="button" class="link-button" data-action="returnToBag" id="return-to-bag">Return to bag</button></div></div>' +
+      '<aside class="panel" aria-labelledby="saved-h"><h2 id="saved-h">Saved for you</h2>' +
+      '<div class="order-items">' + AE.jeansSvg(b.productId, b.colorId, { label: "" }) +
+      '<div><p class="line-title">' + esc(itemName(b)) + "</p></div></div>" +
+      '<dl class="kv"><dt>Color</dt><dd>' + esc(colorName(b)) + "</dd><dt>Size</dt><dd>" + esc(AE.fitLabel(b)) + "</dd>" +
+      "<dt>Quantity</dt><dd>" + b.qty + "</dd><dt>Method</dt><dd>Store pickup (free)</dd>" +
+      "<dt>Total</dt><dd>" + AE.money(AE.priceLines(b).total) + "</dd></dl>" +
+      '<h3>Your details</h3>' + details + "</aside></div></section>";
+  };
+
+  // ---- S8 Order confirmation ---------------------------------------------------
+
+  V.S8 = function (state) {
+    var o = state.order, s = o.snapshot;
+    var fulfil = s.method === "pickup"
+      ? "<dt>Method</dt><dd>Store pickup (free)</dd><dt>Pickup store</dt><dd>" + esc(s.storeName) + "</dd><dt>Pickup date</dt><dd>Ready " + esc(s.pickupDate) + "</dd>"
+      : "<dt>Method</dt><dd>Ship to me (free)</dd><dt>Estimated delivery</dt><dd>" + esc(s.shipEstimate) + "</dd>";
+    return '<section data-state="S8" aria-labelledby="h1" class="narrow">' +
+      '<div class="panel">' +
+      '<div class="confirm-head"><span class="check-circle" aria-hidden="true">✓</span><h1 id="h1">Order placed (simulated)</h1></div>' +
+      '<p class="order-number">Order number <strong data-testid="order-number">' + esc(o.number) + "</strong></p>" +
+      '<div class="notice notice-info"><p>No real order or payment was made. This is a simulated prototype.</p></div>' +
+      '<div class="item-block">' + AE.jeansSvg(s.productId, s.colorId, { label: "" }) +
+      '<div><p class="line-title">' + esc(s.productName) + "</p>" +
+      '<dl class="detail-list">' +
+      "<dt>Color</dt><dd>" + esc(s.colorName) + "</dd>" +
+      "<dt>Size</dt><dd>" + esc(s.size) + "</dd>" +
+      "<dt>Length</dt><dd>" + esc(s.length) + "</dd>" +
+      "<dt>Quantity</dt><dd>" + s.qty + "</dd>" + fulfil +
+      "<dt>Payment</dt><dd>Simulated card</dd>" +
+      '<dt>Total</dt><dd data-testid="order-total">' + AE.money(s.lines.total) + "</dd>" +
+      "</dl></div></div>" +
+      '<div class="actions-row"><button type="button" class="btn btn-primary" data-action="startOver" id="start-over">Start over</button></div>' +
+      "</div></section>";
+  };
 
   V.render = function (state, ui) {
     var fn = V[state.route] || V.S1;

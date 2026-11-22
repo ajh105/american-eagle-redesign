@@ -226,6 +226,11 @@
         render(false);
         return;
       case "submitCheckout": ev.preventDefault(); submitCheckout(); return;
+      case "focusField":
+        ev.preventDefault(); // never change the hash: it drives routing
+        var target = document.getElementById(el.getAttribute("data-target"));
+        if (target) { target.focus({ preventScroll: true }); target.scrollIntoView({ block: "center" }); }
+        return;
       case "backToBag": dispatch("backToBag"); return;
       case "chooseReplacement": dispatch("chooseReplacement", { storeId: el.getAttribute("data-store") }); return;
       case "returnToBag": dispatch("returnToBagFromRecovery"); return;
