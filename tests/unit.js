@@ -50,6 +50,23 @@ test("search examples from spec", () => {
   assert.strictEqual(AE.searchCards("skirt").length, 0);
 });
 
+test("S1 results: category, fit/color filters, sort; header search resets filters", () => {
+  const ids2 = (r) => r.cards.map((c) => c.id).join(",");
+  assert.strictEqual(ids2(AE.resultsFor({ category: "jeans", sort: "featured", fits: [], colors: [] })), "c1,c2,c3,c4,c5");
+  assert.strictEqual(ids2(AE.resultsFor({ category: "men", sort: "featured", fits: [], colors: [] })), "");
+  assert.strictEqual(ids2(AE.resultsFor({ query: "baggy", sort: "price-asc", fits: ["Baggy Wide-Leg"], colors: [] })), "c2,c3,c4");
+  assert.strictEqual(ids2(AE.resultsFor({ query: "", sort: "price-desc", fits: [], colors: ["medium-bright-indigo"] })), "c5,c3");
+  let s = AE.initialState();
+  assert.strictEqual(s.search.view, "home");
+  s = run(s, "openCategory", { id: "jeans" });
+  s = run(s, "toggleFilter", { kind: "fit", value: "Curvy" });
+  assert.deepStrictEqual(Array.from(s.search.fits), ["Curvy"]);
+  s = run(s, "runSearch", { query: " baggy " });
+  assert.strictEqual(s.search.query, "baggy");
+  assert.strictEqual(s.search.fits.length, 0);
+  assert.strictEqual(s.search.view, "results");
+});
+
 // ---- Size / length ----
 test("size 10: X-Short unavailable, others available; 18 Short unavailable", () => {
   assert.strictEqual(AE.isLengthAvailable("10", "X-Short"), false);

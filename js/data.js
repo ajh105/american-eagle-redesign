@@ -28,6 +28,8 @@
       name: "AE Stretch Super High-Waisted Baggy Straight Jean",
       style: null,
       shape: "straight",
+      fit: "Baggy Straight",
+      details: ["Super high rise", "Relaxed, baggy straight leg", "Some stretch"],
       colors: ["dark-indigo"],
       prices: { "dark-indigo": { sale: 5995, orig: 6495 } }
     },
@@ -36,6 +38,8 @@
       name: "AE Super High-Waisted Baggy Wide-Leg Jean",
       style: "0437-6331",
       shape: "wide",
+      fit: "Baggy Wide-Leg",
+      details: ["Super high rise", "Wide leg with a slouchy, long inseam", "Some stretch, lightweight fabric"],
       colors: ["dark-indigo", "medium-bright-indigo", "light-vintage"],
       prices: {
         "dark-indigo": { sale: 6645, orig: 6995 },
@@ -48,6 +52,8 @@
       name: "AE Curvy Super High-Waisted Baggy Wide-Leg Jean",
       style: null,
       shape: "wide",
+      fit: "Curvy",
+      details: ["Super high rise", "Curvy fit: extra room through hip and thigh", "Wide leg"],
       colors: ["medium-bright-indigo"],
       prices: { "medium-bright-indigo": { sale: 7195, orig: 7995 } }
     }
@@ -119,26 +125,65 @@
     });
   };
 
-  // ---- Product image: local inline SVG jeans silhouette tinted per wash ----
-  AE.jeansSvg = function (productId, colorId, opts) {
-    var p = AE.getProduct(productId), c = AE.getColor(colorId);
-    if (!p || !c) return "";
-    var label = (opts && opts.label) || (p.name + " in " + c.name);
-    var legs = p.shape === "wide"
-      ? "M58 70 L142 70 L150 112 L170 280 L114 280 L100 140 L86 280 L30 280 L50 112 Z"
-      : "M58 70 L142 70 L148 112 L152 280 L108 280 L100 140 L92 280 L48 280 L52 112 Z";
-    return '<svg class="jeans" viewBox="0 0 200 300" role="img" aria-label="' + escapeAttr(label) + '">' +
-      '<rect width="200" height="300" fill="#f1f3f7"/>' +
-      '<path d="' + legs + '" fill="' + c.hex + '"/>' +
-      '<rect x="58" y="62" width="84" height="14" fill="' + c.hex + '" stroke="' + c.seam + '" stroke-width="1.5"/>' +
-      '<path d="M100 76 L100 128" stroke="' + c.seam + '" stroke-width="1.5" stroke-dasharray="3 3"/>' +
-      '<path d="M66 82 Q78 98 92 84" fill="none" stroke="' + c.seam + '" stroke-width="1.5"/>' +
-      '<path d="M134 82 Q122 98 108 84" fill="none" stroke="' + c.seam + '" stroke-width="1.5"/>' +
-      '<circle cx="100" cy="69" r="3" fill="#c9a54a"/>' +
-      "</svg>";
+  // ---- Product images ---------------------------------------------------
+  // Original flat-lay renders made by tools/render-product-images.js (not AE photography).
+  // Replace a file with a licensed photo of the same name to swap it in.
+  AE.IMAGE_VIEWS = ["front", "back", "detail", "pocket"];
+  AE.VIEW_LABELS = { front: "front", back: "back", detail: "waistband detail", pocket: "back pocket detail" };
+  AE.productImage = function (productId, colorId, view) {
+    return "assets/products/" + productId + "_" + colorId + "_" + (view || "front") + ".jpg";
   };
 
-  function escapeAttr(s) {
-    return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
-  }
+  // ---- Navigation categories [DESIGN] ------------------------------------
+  // Women and Jeans open the women's jeans results; the others explain the prototype's scope.
+  AE.CATEGORIES = [
+    { id: "new", label: "New" },
+    { id: "women", label: "Women", results: true },
+    { id: "men", label: "Men" },
+    { id: "jeans", label: "Jeans", results: true },
+    { id: "loungewear", label: "Loungewear & PJs" },
+    { id: "aerie", label: "Aerie" },
+    { id: "clearance", label: "Clearance" }
+  ];
+  AE.getCategory = function (id) {
+    for (var i = 0; i < AE.CATEGORIES.length; i++) if (AE.CATEGORIES[i].id === id) return AE.CATEGORIES[i];
+    return null;
+  };
+  AE.FIT_OPTIONS = ["Baggy Wide-Leg", "Baggy Straight", "Curvy"];
+  AE.SORT_OPTIONS = [
+    { id: "featured", label: "Featured" },
+    { id: "price-asc", label: "Price: Low to High" },
+    { id: "price-desc", label: "Price: High to Low" }
+  ];
+
+  /** Cards for the S1 results view: search or category, then fit/color filters, then sort. */
+  AE.resultsFor = function (search) {
+    var base;
+    if (search.category) {
+      var cat = AE.getCategory(search.category);
+      base = cat && cat.results ? AE.CARDS.slice() : [];
+    } else {
+      base = AE.searchCards(search.query);
+    }
+    var fits = search.fits || [], colors = search.colors || [];
+    var filtered = base.filter(function (c) {
+      return (!fits.length || fits.indexOf(AE.PRODUCTS[c.productId].fit) >= 0) &&
+        (!colors.length || colors.indexOf(c.colorId) >= 0);
+    });
+    if (search.sort === "price-asc" || search.sort === "price-desc") {
+      var dir = search.sort === "price-asc" ? 1 : -1;
+      filtered = filtered.map(function (c, i) { return { c: c, i: i }; }).sort(function (a, b) {
+        var d = AE.getPrice(a.c.productId, a.c.colorId).sale - AE.getPrice(b.c.productId, b.c.colorId).sale;
+        return d ? d * dir : a.i - b.i;
+      }).map(function (x) { return x.c; });
+    }
+    return { base: base, cards: filtered };
+  };
+
+  /** Percent saved, rounded, for "Save N%" badges. */
+  AE.savePercent = function (productId, colorId) {
+    var p = AE.getPrice(productId, colorId);
+    return Math.round((p.orig - p.sale) * 100 / p.orig);
+  };
+
 })(window.AE = window.AE || {});
