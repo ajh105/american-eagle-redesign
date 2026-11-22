@@ -332,3 +332,10 @@ main.wrap { flex: 1; padding-top: 28px; padding-bottom: 48px; outline: none; }
   .field-grid { grid-template-columns: 1fr; }
   h1 { font-size: 1.45rem; }
 }
+
+/* ---- Phase 4 refinements ---- */
+.fictional-note p { margin: 0; }
+.checkout-layout > .panel, .bag-layout > .panel, .bag-main > .panel:first-child { margin-top: 0; }
+.recovery-alert { margin-bottom: 20px; }
+.summary-lines { column-gap: 0; }
+.summary-lines dd { padding-left: 12px; }

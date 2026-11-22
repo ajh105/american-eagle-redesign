@@ -306,7 +306,7 @@
     var needsStore = b.method === "pickup" && !store;
     var l = AE.priceLines(b);
 
-    var summary = '<aside class="panel bag-summary" aria-labelledby="summary-h">' +
+    var summary = '<section class="panel bag-summary" aria-labelledby="summary-h">' +
       '<h2 id="summary-h">Order summary</h2>' + summaryLines(b) +
       '<button type="button" class="btn btn-primary btn-block" data-action="goCheckout" id="checkout-button"' + (needsStore ? ' disabled aria-describedby="checkout-reason"' : "") + ">Checkout</button>" +
       (needsStore ? '<p class="checkout-reason" id="checkout-reason">Choose a store to continue.</p>' : "") +
@@ -315,7 +315,7 @@
       (b.method === "pickup"
         ? (store ? "<p>" + esc(store.name) + "</p><p>Ready " + esc(store.date) + "</p>" : '<p class="muted">No store selected</p>')
         : "<p>Estimated delivery " + esc(AE.SHIP_ESTIMATE) + "</p>") +
-      "</div></aside>";
+      "</div></section>";
 
     var line = '<div class="panel">' +
       '<div class="line-item">' + AE.jeansSvg(b.productId, b.colorId, { label: "" }) +
@@ -382,7 +382,7 @@
 
   /** Order summary used on S6: product, color, size and length, qty, method, store, date, total. */
   function orderSummaryPanel(b, heading) {
-    return '<aside class="panel checkout-summary" aria-labelledby="order-h">' +
+    return '<section class="panel checkout-summary" aria-labelledby="order-h">' +
       '<h2 id="order-h">' + heading + "</h2>" +
       '<div class="order-items">' + AE.jeansSvg(b.productId, b.colorId, { label: "" }) +
       '<div><p class="line-title">' + esc(itemName(b)) + "</p></div></div>" +
@@ -393,7 +393,7 @@
       fulfilmentRows(b) + "</dl>" +
       summaryLines(b) +
       '<button type="button" class="link-button" data-action="backToBag" id="back-to-bag-summary">Edit in bag</button>' +
-      "</aside>";
+      "</section>";
   }
 
   V.S6 = function (state, ui) {
@@ -464,13 +464,13 @@
       '<div class="panel"><h2>Choose another pickup store</h2>' +
       '<p class="muted">These stores can fulfill ' + esc(variant) + ".</p>" + altList +
       '<div class="secondary-links"><button type="button" class="link-button" data-action="returnToBag" id="return-to-bag">Return to bag</button></div></div>' +
-      '<aside class="panel" aria-labelledby="saved-h"><h2 id="saved-h">Saved for you</h2>' +
+      '<section class="panel" aria-labelledby="saved-h"><h2 id="saved-h">Saved for you</h2>' +
       '<div class="order-items">' + AE.jeansSvg(b.productId, b.colorId, { label: "" }) +
       '<div><p class="line-title">' + esc(itemName(b)) + "</p></div></div>" +
       '<dl class="kv"><dt>Color</dt><dd>' + esc(colorName(b)) + "</dd><dt>Size</dt><dd>" + esc(AE.fitLabel(b)) + "</dd>" +
       "<dt>Quantity</dt><dd>" + b.qty + "</dd><dt>Method</dt><dd>Store pickup (free)</dd>" +
       "<dt>Total</dt><dd>" + AE.money(AE.priceLines(b).total) + "</dd></dl>" +
-      '<h3>Your details</h3>' + details + "</aside></div></section>";
+      '<h3>Your details</h3>' + details + "</section></div></section>";
   };
 
   // ---- S8 Order confirmation ---------------------------------------------------
