@@ -6,6 +6,7 @@
   "use strict";
 
   var state = null;
+  var lastAnnounced = null;
   // Transient UI feedback (validation messages). Not part of the shopping state.
   var ui = { errors: {}, summary: [], zipError: null, focusField: null };
 
@@ -52,6 +53,8 @@
     document.getElementById("footer-state").textContent = "Screen " + state.route;
     document.title = AE.views.title(state) + " – AE Pickup Prototype";
 
+    announceNotice();
+
     if (routeChanged) {
       window.scrollTo(0, 0);
       focusHeading();
@@ -68,6 +71,17 @@
       if (again && !again.disabled) again.focus({ preventScroll: true });
       else if (activeId) focusHeading(true);
     }
+  }
+
+  /** Read new notices through the persistent polite live region. */
+  function announceNotice() {
+    var text = state.notice ? state.notice.text : (state.route === "S6" && state.recovery.message) || null;
+    if (text && text !== lastAnnounced) {
+      var live = document.getElementById("live-region");
+      live.textContent = "";
+      setTimeout(function () { live.textContent = text; }, 50);
+    }
+    lastAnnounced = text;
   }
 
   function focusHeading(preventScroll) {
