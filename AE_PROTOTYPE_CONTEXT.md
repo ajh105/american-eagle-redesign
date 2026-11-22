@@ -78,11 +78,11 @@ List order is as above. Any ZIP is accepted only if it is 5 digits; every valid 
 
 | Card (result order) | Product | Color | Sale / Orig |
 |---|---|---|---|
-| 1 | AE Stretch Super High-Waisted Baggy Straight Jean | Dark Indigo | $59.95 / $64.95 |
-| 2 | AE Super High-Waisted Baggy Wide-Leg Jean | Dark Indigo | $66.45 / $69.95 |
+| 1 | AE Super High-Waisted Straight Jean | Black Charcoal | $59.95 / $64.95 |
+| 2 | AE Super High-Waisted Baggy Wide-Leg Jean | Dark Indigo Wash | $66.45 / $69.95 |
 | **3 (target)** | AE Super High-Waisted Baggy Wide-Leg Jean, style 0437-6331 | **Medium Bright Indigo** | **$66.45 / $69.95** (observed) |
-| 4 | AE Super High-Waisted Baggy Wide-Leg Jean | Light Vintage | $66.45 / $69.95 |
-| 5 | AE Curvy Super High-Waisted Baggy Wide-Leg Jean | Medium Bright Indigo | $71.95 / $79.95 |
+| 4 | AE Super High-Waisted Baggy Wide-Leg Jean | Salty Air | $66.45 / $69.95 |
+| 5 | AE Curvy Super High-Waisted Baggy Wide-Leg Jean | Dark Wash | $71.95 / $79.95 |
 
 - The target is the center card [OBSERVED: it was the center result]. Cards 2–4 are the same product in three washes; each product page also shows those three swatches so the shopper can switch color on S2.
 - Only the target configuration (card 3, Medium Bright Indigo, 10 Long) completes the scenario. Other items are fully functional so the choice is real.
@@ -90,7 +90,7 @@ List order is as above. Any ZIP is accepted only if it is 5 digits; every valid 
 
 ### Search behavior [DESIGN]
 
-Case-insensitive; hyphens and spaces are equivalent; every typed word must appear in the product name, color, or style number. Examples: "baggy wide-leg" returns cards 2–5; "baggy" returns all five; "0437" returns cards 2–4 (the style number belongs to the wide-leg product, not the Curvy or Straight styles). No match shows "No jeans match '…'. Try 'baggy'." An empty query shows all five. Enter or the Search button runs the search. Landing on S1 shows all five.
+Case-insensitive; hyphens and spaces are equivalent; every typed word must appear in the product name, color, or style number. Examples: "baggy wide-leg" returns cards 2–5; "baggy" returns cards 2–5 (card 1's real name has no "baggy"); "jean" returns all five; "0437" returns cards 2–4 (the style number belongs to the wide-leg product, not the Curvy or Straight styles). No match shows "No jeans match '…'. Try 'baggy'." An empty query shows all five. Enter or the Search button runs the search. Landing on S1 shows all five.
 
 ### Size and length availability [SIMULATED, except as noted]
 
@@ -284,6 +284,13 @@ Commit and tag the finished build **`v1.0-pretest`** (or keep a duplicate deploy
 - Tax fixed at 9.2% so one pair still totals $72.56. Shipping estimate Tue, Dec 8.
 - Bag holds a single line item; adding another item replaces it.
 - Wireflow redrawn (`american_eagle_wireflow_v2`) with no crossings or label collisions.
+
+### Realism pass (approved)
+
+- With the instructor's approval the prototype uses AE's product photos (stored locally, credited, `noindex`).
+- Non-target cards 1, 2, 4, 5 use AE's real product and wash names so labels match their photos (user-approved). Their prices
+  stay simulated. The target (card 3), all scenario values, stores, dates, totals and recovery logic are unchanged.
+- The header bag badge counts distinct line items (not quantity) and is hidden when the bag is empty.
 
 ### Clarifications added Nov 22 (approved)
 

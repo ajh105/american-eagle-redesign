@@ -54,7 +54,8 @@ Screenshots of every state are in [`docs/screenshots/`](docs/screenshots/).
   and they clear on refresh and reset.
 - Small catalog (five search results, three products), one line item in the bag (adding another replaces it).
   Header categories other than Women and Jeans explain that the prototype only includes women's jeans.
-- **Images and branding:** product images are original renders, not AE photography (see `assets/products/README.md`).
+- **Images and branding:** product photos are American Eagle's own (© American Eagle Outfitters), stored locally and used only
+  for this non-commercial academic critique (see `assets/products/README.md`). The four non-target items use AE's real names and washes.
   The wordmark is typeset text, not AE's logo artwork. The font is Avenir Next where installed, otherwise self-hosted Nunito Sans (SIL OFL).
 - Desktop-first; usable at phone width but not optimized for it. Formal usability testing has not yet occurred.
 
@@ -70,9 +71,9 @@ js/pricing.js       integer-cent pricing (1 × $66.45 → $72.56)
 js/state.js         central state, pure actions, validation, sessionStorage (payment excluded)
 js/router.js        hash routes #/s1–#/s8 and guards
 js/views.js         site header and S1–S8 render functions
-assets/products/    product image renders (replaceable with licensed photos)
+assets/products/    local copies of the AE product photos used by the prototype
 assets/fonts/       self-hosted Nunito Sans (OFL)
-tools/              render-product-images.js (regenerates the product renders)
+tools/              fetch-ae-images.js (re-downloads the product photos)
 docs/               visual direction notes and S1–S8 screenshots
 js/main.js          dispatch, rendering, focus management, events
 tests/              unit checks, acceptance tests (spec §11), screenshot capture

@@ -423,7 +423,7 @@ async function test(num, name, page, fn) {
       assert.strictEqual(saved.recovery.blocked, null);
       assert.strictEqual(saved.checkout.name, "");
       assert.strictEqual(await p.$(".bag-link"), null);
-      assert.strictEqual((await text(p, "#header-bag-count")).trim(), "0");
+      assert.strictEqual(await p.$("#header-bag-count"), null, "bag badge hidden when empty");
       assert.strictEqual(await p.$(".result-card"), null, "reset lands on the S1 homepage");
     }
     // After reset the planned failure happens again
@@ -534,7 +534,7 @@ async function test(num, name, page, fn) {
     assert.deepStrictEqual(await p.$$eval(".result-card", (e) => e.map((x) => x.id)), ["card-c5"]);
     await p.click("#clear-filters");
     await p.click('label:has(#color-filter-medium-bright-indigo)');
-    assert.deepStrictEqual(await p.$$eval(".result-card", (e) => e.map((x) => x.id)), ["card-c3", "card-c5"]);
+    assert.deepStrictEqual(await p.$$eval(".result-card", (e) => e.map((x) => x.id)), ["card-c3"]);
     await p.click("#clear-filters");
     await p.click('label:has(#sort-price-asc)');
     assert.deepStrictEqual(await p.$$eval(".result-card", (e) => e.map((x) => x.id)), ["card-c1", "card-c2", "card-c3", "card-c4", "card-c5"]);
@@ -572,6 +572,19 @@ async function test(num, name, page, fn) {
     assert.ok(await bannerOnTop(), "notice visible above the bag drawer");
     await p.click(".banner-reset");
     await expectState(p, "S1");
+  });
+
+
+  await test(15, "Bag badge counts distinct items (not quantity) and hides when empty", page, async (p) => {
+    assert.strictEqual(await p.$("#header-bag-count"), null, "no badge with an empty bag");
+    await pickupToBag(p, "westgate", { qty: 3 });
+    assert.strictEqual((await text(p, "#header-bag-count")).trim(), "1", "qty 3 of one item shows 1");
+    assert.strictEqual(await p.getAttribute("#header-bag", "aria-label"), "Shopping bag, 1 item");
+    await p.click("#qty-down");
+    assert.strictEqual((await text(p, "#header-bag-count")).trim(), "1");
+    await p.click("#remove-item");
+    assert.strictEqual(await p.$("#header-bag-count"), null, "badge hidden after Remove");
+    assert.strictEqual(await p.getAttribute("#header-bag", "aria-label"), "Shopping bag, 0 items");
   });
 
   // Console errors across the whole run

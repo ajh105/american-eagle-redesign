@@ -14,24 +14,28 @@
 
   // ---- Colors (washes) ---------------------------------------------------
   AE.COLORS = {
-    "dark-indigo": { name: "Dark Indigo", hex: "#25324f", seam: "#7d8cab" },
-    "medium-bright-indigo": { name: "Medium Bright Indigo", hex: "#4767a3", seam: "#b4c6e8" },
-    "light-vintage": { name: "Light Vintage", hex: "#93acc9", seam: "#e3ecf6" }
+    // Names are AE's wash names for the photographed items [OBSERVED Nov 22, 2026].
+    "dark-indigo": { name: "Dark Indigo Wash", hex: "#2f4569" },
+    "medium-bright-indigo": { name: "Medium Bright Indigo", hex: "#5c7fb0" },
+    "light-vintage": { name: "Salty Air", hex: "#a9c3dc" },
+    "dark-wash": { name: "Dark Wash", hex: "#24365a" },
+    "black-charcoal": { name: "Black Charcoal", hex: "#3b3c3f" }
   };
 
   // ---- Products (prices in integer cents) -------------------------------
   // The wide-leg product, its Medium Bright Indigo wash, style 0437-6331 and
-  // the $66.45 / $69.95 price are [OBSERVED]. Everything else is [SIMULATED].
+  // the $66.45 / $69.95 price are [OBSERVED]. Product names and washes of the other
+  // items are AE's real ones (to match their photos); their prices are [SIMULATED].
   AE.PRODUCTS = {
     "straight": {
       id: "straight",
-      name: "AE Stretch Super High-Waisted Baggy Straight Jean",
-      style: null,
+      name: "AE Super High-Waisted Straight Jean",
+      style: "0435-5884",
       shape: "straight",
-      fit: "Baggy Straight",
-      details: ["Super high rise", "Relaxed, baggy straight leg", "Some stretch"],
-      colors: ["dark-indigo"],
-      prices: { "dark-indigo": { sale: 5995, orig: 6495 } }
+      fit: "Straight",
+      details: ["Super high rise", "Straight leg", "Some stretch"],
+      colors: ["black-charcoal"],
+      prices: { "black-charcoal": { sale: 5995, orig: 6495 } }
     },
     "wide-leg": {
       id: "wide-leg",
@@ -50,22 +54,22 @@
     "curvy": {
       id: "curvy",
       name: "AE Curvy Super High-Waisted Baggy Wide-Leg Jean",
-      style: null,
+      style: "4436-6432",
       shape: "wide",
       fit: "Curvy",
       details: ["Super high rise", "Curvy fit: extra room through hip and thigh", "Wide leg"],
-      colors: ["medium-bright-indigo"],
-      prices: { "medium-bright-indigo": { sale: 7195, orig: 7995 } }
+      colors: ["dark-wash"],
+      prices: { "dark-wash": { sale: 7195, orig: 7995 } }
     }
   };
 
   // Search-result cards, in result order. Card 3 (center) is the scenario target.
   AE.CARDS = [
-    { id: "c1", productId: "straight", colorId: "dark-indigo" },
+    { id: "c1", productId: "straight", colorId: "black-charcoal" },
     { id: "c2", productId: "wide-leg", colorId: "dark-indigo" },
     { id: "c3", productId: "wide-leg", colorId: "medium-bright-indigo" },
     { id: "c4", productId: "wide-leg", colorId: "light-vintage" },
-    { id: "c5", productId: "curvy", colorId: "medium-bright-indigo" }
+    { id: "c5", productId: "curvy", colorId: "dark-wash" }
   ];
 
   // ---- Sizes and lengths -------------------------------------------------
@@ -126,12 +130,27 @@
   };
 
   // ---- Product images ---------------------------------------------------
-  // Original flat-lay renders made by tools/render-product-images.js (not AE photography).
-  // Replace a file with a licensed photo of the same name to swap it in.
-  AE.IMAGE_VIEWS = ["front", "back", "detail", "pocket"];
-  AE.VIEW_LABELS = { front: "front", back: "back", detail: "waistband detail", pocket: "back pocket detail" };
+  // Local copies of AE product photos (tools/fetch-ae-images.js). Images © American Eagle
+  // Outfitters, used only for this non-commercial academic critique.
+  AE.IMAGE_CODES = {
+    "wide-leg|medium-bright-indigo": "0437_6331_857",
+    "wide-leg|dark-indigo": "0437_5870_913",
+    "wide-leg|light-vintage": "0437_5343_452",
+    "curvy|dark-wash": "4436_6432_896",
+    "straight|black-charcoal": "0435_5884_056"
+  };
+  // Gallery order as measured on ae.com: back on model + flat front, full-width model front,
+  // flat back + side, then detail. AE has no detail shot for Salty Air.
+  AE.GALLERY_VIEWS = ["ob", "f", "of", "b", "os", "d2"];
+  AE.MISSING_VIEWS = { "0437_5343_452": ["d2"] };
+  AE.VIEW_LABELS = { of: "model front", ob: "model back", f: "front", b: "back", os: "model side", d2: "detail", s: "swatch" };
+  AE.imageCode = function (productId, colorId) { return AE.IMAGE_CODES[productId + "|" + colorId] || null; };
   AE.productImage = function (productId, colorId, view) {
-    return "assets/products/" + productId + "_" + colorId + "_" + (view || "front") + ".jpg";
+    return "assets/products/" + AE.imageCode(productId, colorId) + "_" + (view || "f") + ".jpg";
+  };
+  AE.galleryViews = function (productId, colorId) {
+    var missing = AE.MISSING_VIEWS[AE.imageCode(productId, colorId)] || [];
+    return AE.GALLERY_VIEWS.filter(function (v) { return missing.indexOf(v) < 0; });
   };
 
   // ---- Navigation categories [DESIGN] ------------------------------------
@@ -149,7 +168,7 @@
     for (var i = 0; i < AE.CATEGORIES.length; i++) if (AE.CATEGORIES[i].id === id) return AE.CATEGORIES[i];
     return null;
   };
-  AE.FIT_OPTIONS = ["Baggy Wide-Leg", "Baggy Straight", "Curvy"];
+  AE.FIT_OPTIONS = ["Baggy Wide-Leg", "Straight", "Curvy"];
   AE.SORT_OPTIONS = [
     { id: "featured", label: "Featured" },
     { id: "price-asc", label: "Price: Low to High" },

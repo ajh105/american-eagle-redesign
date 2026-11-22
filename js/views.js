@@ -38,7 +38,7 @@
     return '<img class="' + (cls || "") + '" src="' + AE.productImage(item.productId, item.colorId, view) + '" alt="' + esc(alt || "") + '" loading="lazy" decoding="async">';
   }
   function photoAlt(item, view) {
-    return AE.getProduct(item.productId).name + " in " + AE.getColor(item.colorId).name + ", " + AE.VIEW_LABELS[view || "front"] + " (product render)";
+    return AE.getProduct(item.productId).name + " in " + AE.getColor(item.colorId).name + ", " + AE.VIEW_LABELS[view || "f"] + " view";
   }
 
   function priceInline(productId, colorId, qty) {
@@ -93,12 +93,15 @@
 
   function summaryLines(item) {
     var l = AE.priceLines(item);
+    var totalLabel = (arguments[1] && arguments[1].totalLabel) || "Estimated Total:";
     return '<dl class="summary-lines">' +
-      "<dt>Merchandise (" + l.qty + (l.qty === 1 ? " item" : " items") + "):</dt><dd>" + AE.money(l.merch) + "</dd>" +
+      "<dt>Merchandise:</dt><dd>" + AE.money(l.merch) + "</dd>" +
       '<dt>Savings:</dt><dd class="saving">' + AE.money(-l.savings) + "</dd>" +
-      "<dt>" + (item.method === "pickup" ? "Store pickup:" : "Shipping:") + "</dt><dd>Free</dd>" +
+      '<dd class="sub-line"><span class="saving">' + AE.money(-l.savings) + "</span> Item Discounts</dd>" +
+      "<dt>" + (item.method === "pickup" ? "Store Pickup:" : "Shipping:") + "</dt><dd>Free</dd>" +
       "<dt>Estimated tax (simulated):</dt><dd>" + AE.money(l.tax) + "</dd>" +
-      '<dt class="total">Estimated Total:</dt><dd class="total" data-testid="order-total">' + AE.money(l.total) + "</dd>" +
+      '<dt class="total">' + totalLabel + '</dt><dd class="total" data-testid="order-total">' + AE.money(l.total) + "</dd>" +
+      '<dd class="saving-note">You’re saving ' + AE.money(l.savings) + "!</dd>" +
       "</dl>";
   }
 
@@ -127,7 +130,8 @@
   // ---- Header ----------------------------------------------------------------
 
   V.header = function (state) {
-    var count = state.bag ? state.bag.qty : 0;
+    // Badge counts distinct line items, not quantity (1 item at qty 3 shows "1"); hidden when empty.
+    var count = state.bag ? 1 : 0;
     var checkoutish = state.route === "S6" || state.route === "S7" || state.route === "S8";
     if (checkoutish) {
       return '<div class="checkout-header"><div class="wrap checkout-header-inner">' +
@@ -138,7 +142,7 @@
     return '<div class="brand-bar"><div class="wrap brand-bar-inner">' +
       '<span class="brand-tab">AMERICAN EAGLE</span>' +
       '<button type="button" class="icon-button bag-button" data-action="viewBag" id="header-bag" aria-label="Shopping bag, ' + count + (count === 1 ? " item" : " items") + '">' +
-      icon("bag") + '<span class="bag-count" id="header-bag-count" aria-hidden="true">' + count + "</span></button>" +
+      icon("bag") + (count ? '<span class="bag-count" id="header-bag-count" aria-hidden="true">' + count + "</span>" : "") + "</button>" +
       "</div></div>" +
       '<div class="masthead"><div class="wrap masthead-inner">' +
       '<span class="masthead-spacer"></span>' +
@@ -158,21 +162,23 @@
   // ---- S1 Home and search results --------------------------------------------
 
   function homeView() {
+    var heroCards = [AE.CARDS[1], AE.CARDS[2], AE.CARDS[3]];
     var fits = [
-      { q: "baggy wide-leg", label: "Baggy Wide-Leg", card: AE.CARDS[2] },
-      { q: "straight", label: "Baggy Straight", card: AE.CARDS[0] },
-      { q: "curvy", label: "Curvy", card: AE.CARDS[4] }
+      { q: "baggy wide-leg", label: "Baggy & Wide Leg Jeans", tag: "Super relaxed & laidback.", card: AE.CARDS[2] },
+      { q: "straight", label: "Straight Leg Jeans", tag: "Classic straight fits.", card: AE.CARDS[0] },
+      { q: "curvy", label: "Curvy Jeans", tag: "Say goodbye to waistband gapping.", card: AE.CARDS[4] }
     ];
     return '<section class="home" data-state="S1" aria-labelledby="h1">' +
-      '<div class="hero"><img class="hero-img" src="assets/products/hero.jpg" alt="Three pairs of baggy wide-leg jeans in dark, medium and light washes (product render)">' +
+      '<div class="hero">' +
+      '<div class="hero-images">' + heroCards.map(function (c) { return img(c, "of", "hero-img", ""); }).join("") + "</div>" +
       '<div class="hero-copy"><p class="eyebrow">Women’s Denim</p>' +
       '<h1 id="h1">The Baggy Edit</h1>' +
-      "<p>Super high-waisted wide-leg and straight jeans in every wash. Free store pickup.</p>" +
-      '<div class="hero-actions"><button type="button" class="btn btn-dark" data-action="openCategory" data-category="jeans" id="hero-shop">Shop Women’s Jeans</button></div></div></div>' +
-      '<div class="wrap home-section"><h2 class="section-title">Shop by Fit</h2>' +
+      "<p>Super high-waisted, super relaxed. Free store pickup.</p>" +
+      '<div class="hero-actions"><button type="button" class="btn btn-cream" data-action="openCategory" data-category="jeans" id="hero-shop">Shop Women’s Jeans</button></div></div></div>' +
+      '<div class="wrap home-section"><h2 class="cat-title">Shop Women’s Jeans by Fit</h2>' +
       '<ul class="fit-tiles">' + fits.map(function (f, i) {
         return '<li><button type="button" class="fit-tile" data-action="runSearch" data-query="' + esc(f.q) + '" id="fit-' + i + '">' +
-          img(f.card, "front", "fit-img", "") + '<span class="fit-label">' + esc(f.label) + "</span></button></li>";
+          img(f.card, "of", "fit-img", "") + '<span class="fit-label">' + esc(f.label) + '</span><span class="fit-tag">' + esc(f.tag) + "</span></button></li>";
       }).join("") + "</ul></div>" +
       '<div class="wrap home-section home-perks">' +
       '<div class="perk">' + icon("store") + "<div><strong>Free Store Pickup</strong><p>Choose a nearby store and see the pickup date before you add to bag.</p></div></div>" +
@@ -185,7 +191,7 @@
     var r = AE.resultsFor(s);
     var cat = s.category ? AE.getCategory(s.category) : null;
     var unavailable = cat && !cat.results;
-    var heading = cat ? (cat.results ? "Women’s Jeans" : cat.label) : (s.query ? "Results for “" + esc(s.query) + "”" : "All Jeans");
+    var heading = cat ? (cat.results ? "Women’s Jeans" : cat.label) : (s.query ? "Search results for “" + esc(s.query) + "”" : "All Jeans");
     var count = r.cards.length;
     var status = unavailable ? "" : (s.query
       ? (count ? count + (count === 1 ? " result" : " results") + " for “" + esc(s.query) + "”" : "")
@@ -224,7 +230,7 @@
       grid = '<ul class="results-grid">' + r.cards.map(function (c) {
         var p = AE.getProduct(c.productId), col = AE.getColor(c.colorId);
         return '<li><button type="button" class="result-card" id="card-' + c.id + '" data-action="openCard" data-card="' + c.id + '">' +
-          '<span class="tile-media">' + img(c, "front", "tile-img", "") +
+          '<span class="tile-media">' + img(c, "of", "tile-img", "") + img(c, "ob", "tile-img tile-img-alt", "") +
           '<span class="save-badge">Save ' + AE.savePercent(c.productId, c.colorId) + "%</span></span>" +
           '<span class="tile-flag">' + esc(p.fit) + "</span>" +
           '<span class="tile-name">' + esc(p.name) + "</span>" +
@@ -235,7 +241,7 @@
 
     return '<section class="results-page wrap" data-state="S1" aria-labelledby="h1">' +
       '<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><button type="button" class="crumb" data-action="goHome" id="crumb-home">Home</button></li><li aria-current="page">' + (cat ? esc(cat.label) : "Search") + "</li></ol></nav>" +
-      '<div class="results-head"><h1 id="h1">' + heading + "</h1>" +
+      '<div class="results-head"><h1 id="h1">' + heading + (unavailable ? "" : ' <span class="count">(' + count + ")</span>") + "</h1>" +
       (state.bag ? '<button type="button" class="btn btn-outline btn-sm bag-link" data-action="viewBag" id="results-bag">Bag (' + state.bag.qty + ")</button>" : "") + "</div>" +
       (status ? '<p class="results-status" id="results-status" tabindex="-1" aria-live="polite">' + status + "</p>" : '<p class="visually-hidden" id="results-status" tabindex="-1" aria-live="polite">' + (unavailable ? "Category not included in prototype" : "No results") + "</p>") +
       '<div class="results-layout' + (unavailable ? " no-rail" : "") + '">' + rail + '<div class="results-main">' + grid + "</div></div></section>";
@@ -255,8 +261,8 @@
     var editing = state.editing;
     var price = AE.getPrice(d.productId, d.colorId);
 
-    var gallery = '<div class="gallery">' + AE.IMAGE_VIEWS.map(function (v) {
-      return '<div class="gallery-item">' + img(d, v, "gallery-img", photoAlt(d, v)) + "</div>";
+    var gallery = '<div class="gallery">' + AE.galleryViews(d.productId, d.colorId).map(function (v) {
+      return '<div class="gallery-item' + (v === "of" ? " wide" : "") + '">' + img(d, v, "gallery-img", photoAlt(d, v)) + "</div>";
     }).join("") + "</div>";
 
     // Color swatches (fabric crops of the product image)
@@ -264,7 +270,7 @@
       '<div class="swatches">' + p.colors.map(function (cid) {
         var c = AE.getColor(cid);
         return '<span class="swatch"><input type="radio" name="color" id="color-' + cid + '" value="' + cid + '" data-change="color"' + (cid === d.colorId ? " checked" : "") + ">" +
-          '<label for="color-' + cid + '" style="background-image:url(' + AE.productImage(d.productId, cid, "detail") + ')"><span class="visually-hidden">' + esc(c.name) + "</span></label></span>";
+          '<label for="color-' + cid + '" style="background-image:url(' + AE.productImage(d.productId, cid, "s") + ')"><span class="visually-hidden">' + esc(c.name) + "</span></label></span>";
       }).join("") + "</div>" +
       '<p class="swatch-name">' + esc(col.name) + "</p></div></fieldset>";
 
@@ -335,7 +341,7 @@
       '<h1 id="h1" class="pdp-title">' + esc(p.name) + "</h1>" +
       (p.style ? '<p class="pdp-style">Style ' + esc(p.style) + "</p>" : "") +
       '<div class="pdp-row"><span class="row-label">Price:</span><div class="row-body pdp-price">' +
-      '<span class="price-now">' + AE.money(price.sale) + '</span> <span class="price-orig"><span class="visually-hidden">Original price </span>' + AE.money(price.orig) + '</span> <span class="save-badge inline">Save ' + AE.savePercent(d.productId, d.colorId) + "%</span></div></div>" +
+      '<span class="price-now">Now ' + AE.money(price.sale) + '</span> <span class="price-orig"><span class="visually-hidden">Original price </span>' + AE.money(price.orig) + '</span> <span class="save-badge inline">Save ' + AE.savePercent(d.productId, d.colorId) + "%</span></div></div>" +
       colorGroup + editNotice +
       '<div class="pdp-controls">' + sizeGroup + lengthGroup + qtyGroup + methodGroup + "</div>" +
       replaceNotice +
@@ -373,7 +379,7 @@
     var zipValid = /^\d{5}$/.test(state.zip || "");
     var back = change ? V.S5(state, {}) : V.S2(Object.assign({}, state, { notice: null }), {});
 
-    var recap = '<div class="modal-recap">' + img(item, "front", "recap-img", "") +
+    var recap = '<div class="modal-recap">' + img(item, "f", "recap-img", "") +
       '<div><p class="recap-name">' + esc(itemName(item)) + "</p>" +
       '<p class="recap-meta">' + esc(colorName(item)) + " · " + esc(AE.fitLabel(item)) + " · Qty " + item.qty + "</p></div></div>";
 
@@ -452,7 +458,7 @@
       '<section class="drawer" data-state="S4" role="dialog" aria-modal="true" aria-labelledby="h1">' +
       '<div class="drawer-head"><h1 id="h1">Added to bag!</h1></div>' +
       '<div class="drawer-body">' +
-      '<div class="drawer-item">' + img(b, "front", "drawer-img", "") +
+      '<div class="drawer-item">' + img(b, "f", "drawer-img", "") +
       '<div><p class="drawer-name">' + esc(itemName(b)) + "</p>" +
       '<p class="drawer-price"><span class="price-sale">' + AE.money(l.subtotal) + '</span> <span class="price-orig"><span class="visually-hidden">Original price </span>' + AE.money(l.merch) + "</span></p>" +
       '<dl class="specs"><dt>Color:</dt><dd>' + esc(colorName(b)) + "</dd><dt>Size:</dt><dd>" + esc(b.size) + "</dd><dt>Length:</dt><dd>" + esc(b.length) + "</dd><dt>Qty:</dt><dd>" + b.qty + "</dd>" +
@@ -464,6 +470,11 @@
   };
 
   // ---- S5 Shopping bag ---------------------------------------------------------
+
+  /** Observed on ae.com in the bag and checkout. */
+  function notReserved() {
+    return '<p class="not-reserved"><span aria-hidden="true">⏳</span> Items in bag are not reserved. Check out now before they sell out!</p>';
+  }
 
   function deliveryToggle(b) {
     return '<div class="delivery-toggle" role="group" aria-label="Delivery method">' +
@@ -486,7 +497,7 @@
     var summary = '<section class="bag-summary" aria-labelledby="summary-h">' +
       '<h2 id="summary-h" class="section-title">Order Summary</h2>' +
       '<div class="summary-box">' + summaryLines(b) +
-      '<button type="button" class="btn btn-blue btn-block btn-lg" data-action="goCheckout" id="checkout-button"' + (needsStore ? ' disabled aria-describedby="checkout-reason"' : "") + ">Checkout</button>" +
+      '<button type="button" class="btn btn-blue btn-block btn-lg" data-action="goCheckout" id="checkout-button"' + (needsStore ? ' disabled aria-describedby="checkout-reason"' : "") + ">Let’s Check Out <span class=\"chev\" aria-hidden=\"true\">›</span></button>" +
       (needsStore ? '<p class="checkout-reason" id="checkout-reason">' + icon("alert") + "Choose a store to continue.</p>" : "") +
       '<div class="summary-context">' + (b.method === "pickup" ? icon("store") : icon("truck")) + "<div>" +
       "<p><strong>" + (b.method === "pickup" ? "Store Pickup" : "Ship to Me") + "</strong></p>" +
@@ -495,8 +506,8 @@
         : "<p>Estimated delivery " + esc(AE.SHIP_ESTIMATE) + "</p>") +
       "</div></div></div></section>";
 
-    var line = '<div class="bag-items"><h2 class="section-title">1 Item</h2>' +
-      '<div class="line-item">' + '<span class="tile-media">' + img(b, "front", "line-img", "") + '<span class="save-badge">Save ' + AE.savePercent(b.productId, b.colorId) + "%</span></span>" +
+    var line = '<div class="bag-items"><h2 class="section-title">1 Item</h2>' + notReserved() +
+      '<div class="line-item">' + '<span class="tile-media">' + img(b, "f", "line-img", "") + '<span class="save-badge">Save ' + AE.savePercent(b.productId, b.colorId) + "%</span></span>" +
       '<div class="line-info">' +
       '<p class="line-title">' + esc(itemName(b)) + "</p>" +
       '<p class="line-price">' + priceInline(b.productId, b.colorId, b.qty) + (b.qty > 1 ? ' <span class="muted small">(' + AE.money(l.unitSale) + " each)</span>" : "") + "</p>" +
@@ -555,7 +566,7 @@
   }
 
   function checkoutItem(b) {
-    return '<div class="co-item">' + '<span class="tile-media">' + img(b, "front", "co-img", "") + "</span>" +
+    return '<div class="co-item">' + '<span class="tile-media">' + img(b, "f", "co-img", "") + "</span>" +
       '<div><p class="line-title">' + esc(itemName(b)) + "</p>" +
       '<p class="line-price">' + priceInline(b.productId, b.colorId, b.qty) + "</p>" +
       itemSpecs(b) + "</div></div>";
@@ -564,11 +575,12 @@
   /** Order summary used on S6: product, color, size and length, qty, method, store, date, total. */
   function orderSummaryPanel(state, b, button) {
     return '<section class="co-summary" aria-labelledby="order-h">' +
-      '<div class="co-bag-head"><h2 id="order-h" class="section-title">Your Order</h2><span class="muted small">' + b.qty + (b.qty === 1 ? " item" : " items") + "</span></div>" +
+      '<div class="co-bag-head"><h2 id="order-h" class="section-title">Shopping Bag</h2><span class="muted small">1 item</span></div>' +
       checkoutItem(b) +
       '<dl class="kv">' + fulfilmentRows(b) + "</dl>" +
       '<h2 class="section-title">Order Summary</h2>' +
-      '<div class="summary-box">' + summaryLines(b) + (button || "") + "</div>" +
+      '<div class="summary-box">' + summaryLines(b, { totalLabel: "Order Total:" }) + (button || "") +
+      '<p class="charge-note">Simulated checkout: no card is charged and no order is sent.</p></div>' +
       '<button type="button" class="link-button" data-action="backToBag" id="back-to-bag-summary">Edit in bag</button>' +
       "</section>";
   }
@@ -592,7 +604,8 @@
         '<p class="pickup-ready">' + b.qty + (b.qty === 1 ? " item" : " items") + " will be ready by <strong>" + esc(store.date) + "</strong>:</p>" +
         '<div class="store-main">' + storeBadge(store) + '<p class="pickup-store">' + esc(store.name) + "</p></div>" +
         '<div class="store-foot"><p class="store-meta">' + esc(store.distance.replace(" mi", " miles")) + " away · Free</p>" +
-        '<button type="button" class="link-button" data-action="backToBag" id="change-in-bag">Change in bag</button></div></div></div>'
+        '<button type="button" class="link-button" data-action="backToBag" id="change-in-bag">Change in bag</button></div></div></div>' +
+        '<p class="pickup-note">We’ll email you with instructions when your order is ready for pickup.</p>'
       : '<h2 class="section-title">Ship To Me</h2><div class="pickup-card">' + icon("truck", "fulfil-icon") + '<div class="pickup-card-body">' +
         '<p class="pickup-store">Free standard shipping</p><p>Estimated delivery ' + esc(AE.SHIP_ESTIMATE) + "</p>" +
         '<button type="button" class="link-button" data-action="backToBag" id="change-in-bag">Change in bag</button></div></div>';
@@ -603,6 +616,7 @@
         '<div class="field-grid">' + fields.contact.slice(3).map(function (f) { return inputField(state, f, ui); }).join("") + "</div>";
 
     var form = '<form class="co-form" id="checkout-form" data-form="checkout" novalidate aria-labelledby="h1">' +
+      notReserved() +
       '<div class="fictional-note">' + icon("info") + "<p>Use fictional details. Don’t enter real personal or payment information.</p>" +
       '<button type="button" class="link-button" data-action="fillSample" id="fill-sample">Use sample details</button></div>' +
       delivery +
@@ -678,7 +692,7 @@
       '<div class="notice notice-info sim-note">' + icon("info") + "<p><strong>No real order or payment was made.</strong> This is a simulated academic prototype; nothing was charged, reserved or shipped.</p></div>" +
       '<div class="two-col"><div class="col-main">' +
       '<h2 class="section-title">' + (s.method === "pickup" ? "Pickup Details" : "Delivery Details") + "</h2>" +
-      '<div class="co-item">' + '<span class="tile-media">' + img(item, "front", "co-img", "") + "</span>" +
+      '<div class="co-item">' + '<span class="tile-media">' + img(item, "f", "co-img", "") + "</span>" +
       '<div><p class="line-title">' + esc(s.productName) + "</p>" +
       '<dl class="detail-list">' +
       "<dt>Color</dt><dd>" + esc(s.colorName) + "</dd>" +

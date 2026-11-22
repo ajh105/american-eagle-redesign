@@ -510,3 +510,71 @@ fieldset.pdp-row .row-body { margin-left: 78px; }
 .summary-lines { column-gap: 0; }
 .summary-lines dd { padding-left: 12px; }
 .co-item .tile-media, .line-item .tile-media { align-self: start; }
+
+/* ---- Realism pass: real product photography and AE page details ---- */
+/* Bag count: number inside the bag glyph, like ae.com (10px Demi, #24272A). Hidden when the bag is empty. */
+.bag-count { top: 21px; font-size: 10px; font-weight: var(--demi); color: var(--ink); }
+
+/* Homepage: three on-model photos with centered copy (AE editorial banner style) */
+.hero { background: #e9e2d5; }
+.hero-images { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.hero-img { width: 100%; height: clamp(380px, 42vw, 640px); object-fit: cover; object-position: center 20%; opacity: 1; }
+.hero-copy {
+  position: absolute; left: 50%; top: auto; bottom: 0; transform: translateX(-50%); max-width: none; width: 100%;
+  text-align: center; color: #fff; padding: 90px 16px 40px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.45));
+}
+.hero h1 { color: #fff; font-size: clamp(36px, 5vw, 72px); letter-spacing: 0.5px; }
+.hero-copy p { color: #fff; }
+.btn-cream { background: #f1ebe0; color: var(--navy); min-height: 50px; padding: 0 44px; }
+.btn-cream:hover { background: #fff; }
+.cat-title { text-align: center; font-size: 18px; line-height: 21.6px; font-weight: var(--demi); margin: 6px 0 22px; }
+.cat-title .count, .results-head .count { font-size: 14px; font-weight: var(--demi); }
+.fit-tiles { gap: 0; }
+.fit-img { aspect-ratio: 3 / 4; object-position: center 25%; background: #ede7dc; }
+.fit-tile { display: flex; flex-direction: column; align-items: center; }
+.fit-label { font-size: 13px; line-height: 18px; border-bottom: none; text-decoration: underline; text-underline-offset: 2px; margin-top: 18px; }
+.fit-tag { font-size: 12px; color: var(--gray); margin-top: 6px; }
+
+/* Results: centered category title like ae.com; on-model tiles that swap to the back view on hover */
+.results-head { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: -6px; }
+.results-head h1 { grid-column: 2; font-size: 18px; line-height: 21.6px; text-align: center; }
+.results-head .bag-link { grid-column: 3; justify-self: end; }
+.results-status { text-align: center; margin: 4px 0 22px; }
+.tile-media { background: #f3f1ec; overflow: hidden; }
+.tile-img-alt { position: absolute; inset: 0; height: 100%; opacity: 0; transition: opacity 0.2s; }
+.result-card:hover .tile-img-alt, .result-card:focus-visible .tile-img-alt { opacity: 1; }
+
+/* Product page gallery: ob + f, full-width of, b + os, d2 (AE order) */
+.gallery-item.wide { grid-column: 1 / -1; }
+.gallery-item { background: #f3f1ec; }
+.swatch label { background-size: cover; background-position: center; }
+
+/* Bag and checkout summary (AE wording and layout) */
+.summary-lines .sub-line { grid-column: 1 / -1; text-align: left; font-size: 12px; color: var(--gray); padding: 0 0 0 20px; margin-top: -4px; }
+.summary-lines .sub-line .saving { font-weight: var(--demi); margin-right: 14px; }
+.summary-lines .saving-note { grid-column: 1 / -1; text-align: left; padding: 0; color: var(--green); font-weight: var(--demi); font-size: 14px; margin-top: -4px; }
+.summary-lines dt.total { font-size: 14px; }
+.not-reserved { background: var(--line-faint); border-radius: 15px; color: var(--blue); font-size: 13px; font-weight: var(--demi); text-align: center; padding: 5px 12px; margin: 0 0 20px; }
+.chev { font-size: 20px; line-height: 1; margin-left: 4px; }
+.charge-note { font-size: 11px; color: var(--gray); text-align: center; margin-top: 12px; }
+.pickup-note { font-size: 12px; color: var(--gray); margin: -6px 0 22px; }
+.line-links .link-button { font-size: 11px; }
+.line-img, .co-img, .drawer-img, .recap-img { background: #f3f1ec; }
+
+@media (max-width: 900px) {
+  .hero-images { grid-template-columns: 1fr 1fr; }
+  .hero-images .hero-img:nth-child(3) { display: none; }
+  .hero-img { height: 420px; }
+}
+@media (max-width: 600px) {
+  .hero-images { grid-template-columns: 1fr; }
+  .hero-images .hero-img:nth-child(n+2) { display: none; }
+  .fit-tiles { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .results-head { grid-template-columns: 1fr auto; }
+  .results-head h1 { grid-column: 1; text-align: left; }
+  .results-head .bag-link { grid-column: 2; }
+}
+/* Count is in the title (as on ae.com); keep the status line for screen readers and focus only. */
+.results-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.results-layout { margin-top: 22px; }

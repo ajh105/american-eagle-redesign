@@ -88,12 +88,16 @@ Measured values are marked **[measured]**. Values chosen for the prototype are m
 
 ## 5. Assets
 
-- **Product photography:** AE's product photos are copyrighted and served from AE's image server. They are **not** copied into this
-  repository. `tools/render-product-images.js` generates original flat-lay renders (front, back, waistband detail, fabric)
-  for each wash and saves them as `assets/products/<product>_<color>_<view>.jpg`. Replacing a file with a properly licensed
-  photo of the same name updates the prototype with no code changes (see `assets/products/README.md`).
-- **Logo:** the red wordmark is typeset text, not AE's logo artwork. No Aerie, Real Rewards or partner logos are reproduced.
-- **Fonts:** Nunito Sans (SIL OFL 1.1), self-hosted in `assets/fonts/`. Nothing loads from a remote host.
+- **Product photography (realism pass):** with the instructor's approval, the prototype now uses AE's own product photos for
+  the five catalog items, stored locally under `assets/products/` (fetched by `tools/fetch-ae-images.js`; see
+  `assets/products/README.md`). Images © American Eagle Outfitters, used only for this non-commercial academic critique;
+  the footer credits them and pages are `noindex`. The earlier generated renders were removed.
+- **Catalog labels:** to match their photos, the four non-target cards use AE's real product and wash names
+  (Super High-Waisted Straight · Black Charcoal; Wide-Leg · Dark Indigo Wash and Salty Air; Curvy · Dark Wash, as seen on the
+  Nov 20 results page). Their prices stay simulated. The target item, its price, the stores, dates and totals are unchanged.
+- **Gallery order [measured]:** model back + flat front, full-width model front, flat back + model side, then detail.
+- **Logo:** the red wordmark is still typeset text, not AE's logo artwork.
+- **Fonts:** Nunito Sans (SIL OFL 1.1), self-hosted in `assets/fonts/`; Avenir Next is used where installed.
 
 ## 6. Academic notice
 
