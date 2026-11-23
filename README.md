@@ -7,7 +7,8 @@ This is a class prototype. It is not affiliated with or endorsed by American Eag
 - **Working prototype:** the Vercel production URL for this repository (see "Hosting" below)
 - **Visual direction:** [`docs/VISUAL_DIRECTION.md`](docs/VISUAL_DIRECTION.md) (measured ae.com styles and what stays redesigned)
 - **Specification:** [`AE_PROTOTYPE_CONTEXT.md`](AE_PROTOTYPE_CONTEXT.md) (authoritative)
-- **Pre-test version:** git tag `v1.0-pretest`. Milestone 2 revisions go on a new branch or version; the tag is never moved.
+- **Pre-test version:** git tag `v1.0-pretest` (created on the tested production build). The version is tracked in Git and this
+  README only; it is not shown in the interface. Milestone 2 revisions go on a new branch or version; the tag is never moved.
 
 ## Opening the prototype
 
@@ -15,7 +16,8 @@ This is a class prototype. It is not affiliated with or endorsed by American Eag
 - **Offline:** download or clone the repository and double-click `index.html`. No server or build step is needed.
 
 The prototype starts on the **S1 homepage**; searching (or choosing Women / Jeans) shows the S1 results page.
-The navy notice bar at the top of every screen says it is an academic, simulated prototype not affiliated with American Eagle Outfitters.
+The navy notice bar at the top of every screen says it is an academic prototype, not affiliated with American Eagle Outfitters,
+with simulated orders and payments and a simulated date (Mon, Nov 30, 2026). It also holds **Reset demo**.
 
 ## Resetting
 

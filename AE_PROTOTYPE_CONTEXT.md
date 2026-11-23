@@ -241,7 +241,7 @@ Fictional data only. Show "Use fictional details. Don't enter real personal or p
 - Keep state in the central model; views read it, never keep private copies.
 - Avoid dead controls. Every visible button or link must do something meaningful.
 - Visual style: American Eagle–inspired, clean: navy and white with neutral grays, a blue primary action, uncluttered hierarchy. Screenshots are references, not UI to copy. Desktop-first (≥1280 px comfortable), responsive where practical.
-- **Persistent demo banner** (slim, top): "Simulated prototype. No real orders or payments. Today is Mon, Nov 30, 2026 (simulated)." with a **Reset demo** link. Footer shows the version tag `v1.0-pretest`.
+- **Persistent notice bar** (slim, top): "Academic redesign prototype · Not affiliated with or endorsed by American Eagle Outfitters · Orders and payments are simulated · Simulated date: Mon, Nov 30, 2026" with a **Reset demo** link. The version (`v1.0-pretest`) is kept in the git tag and README, not shown in the interface (final polish).
 - Accessibility: logical focus order; move focus to the page `h1` on every state change; visible focus ring; every input labeled; selected states not conveyed by color alone (check mark or text); text contrast ≥ 4.5:1; targets ≥ 40 px; recovery message in a `role="alert"` region; no keyboard traps; a skip-to-content link.
 - Do not label individual stores or dates "(simulated)" in the UI; the banner already says the whole site is simulated. The report and documentation state which values are simulated.
 
@@ -284,6 +284,15 @@ Commit and tag the finished build **`v1.0-pretest`** (or keep a duplicate deploy
 - Tax fixed at 9.2% so one pair still totals $72.56. Shipping estimate Tue, Dec 8.
 - Bag holds a single line item; adding another item replaces it.
 - Wireflow redrawn (`american_eagle_wireflow_v2`) with no crossings or label collisions.
+
+### Final UI polish (approved)
+
+- Development labels removed from the interface: no "Screen S#" or version text in the footer. The version lives in the
+  `v1.0-pretest` git tag and the README. State IDs remain as `data-state` test hooks and route hashes only.
+- One concise notice bar (academic prototype, not affiliated, orders and payments simulated, simulated date, Reset demo);
+  the footer keeps only the product-image credit and the simulated-data note.
+- Terminology standardized: Shopping Bag, Store Pickup, Ship to Me, Checkout, "Ready for pickup by <date>"; headings in Title
+  Case, buttons and links in sentence case (matching the spec's labels).
 
 ### Realism pass (approved)
 
