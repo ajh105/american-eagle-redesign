@@ -58,8 +58,7 @@
     document.body.classList.toggle("overlay-open", overlay);
     header.inert = overlay;
     document.querySelector(".site-footer").inert = overlay;
-    document.getElementById("footer-state").textContent = "Screen " + state.route;
-    document.title = AE.views.title(state) + " – AE Pickup Prototype";
+    document.title = AE.views.title(state) + " | American Eagle Redesign Prototype";
 
     announceNotice();
 

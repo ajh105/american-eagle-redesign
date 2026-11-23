@@ -146,7 +146,7 @@ async function test(num, name, page, fn) {
     assert.ok((await mainText(p)).includes("Medium Bright Indigo"));
     await selectOptions(p, { size: "10", length: "long", method: "pickup" });
     assert.strictEqual((await text(p, "#primary-action")).trim(), "Choose a store");
-    assert.ok((await text(p, "#selection-summary")).includes("Medium Bright Indigo · 10 Long · qty 1"));
+    assert.ok((await text(p, "#selection-summary")).includes("Medium Bright Indigo · 10 Long · Qty 1"));
     await p.click("#primary-action");
     await expectState(p, "S3");
     assert.strictEqual(await p.inputValue("#zip-input"), "", "ZIP starts empty");
@@ -158,7 +158,7 @@ async function test(num, name, page, fn) {
     await p.click("#add-to-bag");
     await expectState(p, "S4");
     let t = await mainText(p);
-    for (const s of ["Tanger Outlet Westgate – American Eagle Outlet", "Tue, Dec 1", "Store pickup", "10", "Long", "$66.45"]) assert.ok(t.includes(s), "S4 shows " + s);
+    for (const s of ["Tanger Outlet Westgate – American Eagle Outlet", "Tue, Dec 1", "Store Pickup", "10", "Long", "$66.45"]) assert.ok(t.includes(s), "S4 shows " + s);
     await p.click("#view-bag");
     await expectState(p, "S5");
     t = await mainText(p);
@@ -217,7 +217,7 @@ async function test(num, name, page, fn) {
     await selectOptions(p, { size: "10", length: "long", method: null });
     await p.click("#primary-action");
     await expectState(p, "S2");
-    assert.ok((await mainText(p)).includes("Choose Store pickup or Ship to me."));
+    assert.ok((await mainText(p)).includes("Choose Store Pickup or Ship to Me."));
     assert.strictEqual(await p.evaluate(() => document.activeElement.id), "method-pickup");
     await fresh(p);
     await search(p, "baggy wide-leg"); // S1 now lands on the homepage
@@ -302,7 +302,7 @@ async function test(num, name, page, fn) {
     await p.click("#checkout-submit");
     await expectState(p, "S8");
     t = await mainText(p);
-    assert.ok(t.includes("Ship to me") && t.includes("Tue, Dec 8") && t.includes("$72.56"));
+    assert.ok(t.includes("Ship to Me") && t.includes("Tue, Dec 8") && t.includes("$72.56"));
   });
 
   await test(8, "Validation: summary, inline errors, focus first; no S7/S8", page, async (p) => {
@@ -542,7 +542,7 @@ async function test(num, name, page, fn) {
     assert.strictEqual(await p.$eval(".result-card", (e) => e.id), "card-c5");
     // Out-of-scope category explains itself (no dead control)
     await p.click("#nav-men");
-    assert.ok((await mainText(p)).includes("only includes a small selection of women"));
+    assert.ok((await mainText(p)).includes("only carries women’s jeans"));
     await p.click("#shop-jeans");
     assert.strictEqual(await p.$$eval(".result-card", (e) => e.length), 5);
     // Logo returns to the homepage

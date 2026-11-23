@@ -71,11 +71,11 @@
   /** Method / store / date rows shared by S4, S5, S6 (memory scaffold, F3). */
   function fulfilmentRows(item) {
     if (item.method === "ship") {
-      return "<dt>Method</dt><dd>Ship to me (free)</dd>" +
+      return "<dt>Delivery</dt><dd>Ship to Me · Free</dd>" +
         "<dt>Estimated delivery</dt><dd>" + esc(AE.SHIP_ESTIMATE) + "</dd>";
     }
     var store = AE.getStore(item.storeId);
-    return "<dt>Method</dt><dd>Store pickup (free)</dd>" +
+    return "<dt>Delivery</dt><dd>Store Pickup · Free</dd>" +
       "<dt>Pickup store</dt><dd>" + (store ? esc(store.name) : '<span class="text-warning">No store selected</span>') + "</dd>" +
       "<dt>Pickup date</dt><dd>" + (store ? "Ready " + esc(store.date) : "—") + "</dd>";
   }
@@ -107,8 +107,8 @@
 
   V.title = function (state) {
     return {
-      S1: state.search.view === "results" ? "Search results" : "Home", S2: "Product details", S3: "Store selection",
-      S4: "Added to bag", S5: "Shopping bag", S6: "Checkout", S7: "Availability recovery", S8: "Order confirmation"
+      S1: state.search.view === "results" ? "Women’s Jeans" : "Women’s Jeans & Denim", S2: "Product Details", S3: "Choose a Pickup Store",
+      S4: "Added to Bag", S5: "Shopping Bag", S6: "Checkout", S7: "Choose Another Store", S8: "Order Confirmation"
     }[state.route] || "";
   };
 
@@ -136,7 +136,7 @@
     if (checkoutish) {
       return '<div class="checkout-header"><div class="wrap checkout-header-inner">' +
         '<span class="wordmark-small">AMERICAN EAGLE</span>' +
-        '<span class="secure">' + icon("lock") + "Simulated checkout</span></div></div>";
+        "</div></div>";
     }
     var activeCat = state.route === "S1" && state.search.view === "results" ? state.search.category : null;
     return '<div class="brand-bar"><div class="wrap brand-bar-inner">' +
@@ -182,7 +182,7 @@
       }).join("") + "</ul></div>" +
       '<div class="wrap home-section home-perks">' +
       '<div class="perk">' + icon("store") + "<div><strong>Free Store Pickup</strong><p>Choose a nearby store and see the pickup date before you add to bag.</p></div></div>" +
-      '<div class="perk">' + icon("truck") + "<div><strong>Free Standard Shipping</strong><p>Prefer delivery? Ship to me arrives by " + esc(AE.SHIP_ESTIMATE) + ".</p></div></div>" +
+      '<div class="perk">' + icon("truck") + "<div><strong>Free Standard Shipping</strong><p>Prefer delivery? Ship to Me arrives by " + esc(AE.SHIP_ESTIMATE) + ".</p></div></div>" +
       "</div></section>";
   }
 
@@ -219,12 +219,12 @@
 
     var grid;
     if (unavailable) {
-      grid = '<div class="empty-results"><p>This prototype only includes a small selection of women’s jeans.</p>' +
+      grid = '<div class="empty-results"><p>This demo store only carries women’s jeans.</p>' +
         '<button type="button" class="btn btn-dark" data-action="openCategory" data-category="jeans" id="shop-jeans">Shop Women’s Jeans</button></div>';
     } else if (!count) {
       grid = '<div class="empty-results"><p>' + (r.base.length && filtersOn
         ? "No jeans match these filters."
-        : "No jeans match “" + esc(s.query) + "”. Try “baggy”.") + "</p>" +
+        : "We couldn’t find any results for “" + esc(s.query) + "”. Try searching for “jeans”.") + "</p>" +
         (r.base.length && filtersOn ? '<button type="button" class="btn btn-outline" data-action="clearFilters" id="clear-filters-empty">Clear filters</button>' : "") + "</div>";
     } else {
       grid = '<ul class="results-grid">' + r.cards.map(function (c) {
@@ -243,7 +243,7 @@
       '<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><button type="button" class="crumb" data-action="goHome" id="crumb-home">Home</button></li><li aria-current="page">' + (cat ? esc(cat.label) : "Search") + "</li></ol></nav>" +
       '<div class="results-head"><h1 id="h1">' + heading + (unavailable ? "" : ' <span class="count">(' + count + ")</span>") + "</h1>" +
       (state.bag ? '<button type="button" class="btn btn-outline btn-sm bag-link" data-action="viewBag" id="results-bag">Bag (' + state.bag.qty + ")</button>" : "") + "</div>" +
-      (status ? '<p class="results-status" id="results-status" tabindex="-1" aria-live="polite">' + status + "</p>" : '<p class="visually-hidden" id="results-status" tabindex="-1" aria-live="polite">' + (unavailable ? "Category not included in prototype" : "No results") + "</p>") +
+      (status ? '<p class="results-status" id="results-status" tabindex="-1" aria-live="polite">' + status + "</p>" : '<p class="visually-hidden" id="results-status" tabindex="-1" aria-live="polite">' + (unavailable ? "No products in this category" : "No results") + "</p>") +
       '<div class="results-layout' + (unavailable ? " no-rail" : "") + '">' + rail + '<div class="results-main">' + grid + "</div></div></section>";
   }
 
@@ -311,18 +311,18 @@
       '<legend class="opt-legend">How do you want to get it?</legend>' +
       '<div class="method-options">' +
       '<label class="method-option" for="method-pickup"><input type="radio" name="method" id="method-pickup" value="pickup" data-change="method"' + (d.method === "pickup" ? " checked" : "") + (errs.method ? ' aria-invalid="true"' : "") + ">" +
-      icon("store", "method-icon") + '<span><span class="method-title">Store Pickup</span><span class="method-desc">Free · choose a nearby store next and see its pickup date</span></span></label>' +
+      icon("store", "method-icon") + '<span><span class="method-title">Store Pickup</span><span class="method-desc">Free · Choose a nearby store and see its pickup date</span></span></label>' +
       '<label class="method-option" for="method-ship"><input type="radio" name="method" id="method-ship" value="ship" data-change="method"' + (d.method === "ship" ? " checked" : "") + (errs.method ? ' aria-invalid="true"' : "") + ">" +
-      icon("truck", "method-icon") + '<span><span class="method-title">Ship to Me</span><span class="method-desc">Free standard shipping · arrives by ' + esc(AE.SHIP_ESTIMATE) + "</span></span></label>" +
+      icon("truck", "method-icon") + '<span><span class="method-title">Ship to Me</span><span class="method-desc">Free standard shipping · Arrives by ' + esc(AE.SHIP_ESTIMATE) + "</span></span></label>" +
       "</div>" + fieldError("err-method", errs.method) + "</fieldset>";
 
     var replaceNotice = !editing && state.bag
       ? '<div class="notice notice-info">' + icon("info") + "<p>Your bag has an item. Adding this will replace it.</p></div>" : "";
     var editNotice = editing
-      ? '<div class="notice notice-info">' + icon("info") + "<p>You’re editing the item in your bag. Your pickup or shipping choice stays the same.</p></div>" : "";
+      ? '<div class="notice notice-info">' + icon("info") + "<p>You’re editing the item in your Shopping Bag. Your delivery choice won’t change.</p></div>" : "";
 
-    var parts = [esc(col.name), d.size && d.length ? esc(d.size + " " + d.length) : (d.size ? "Size " + esc(d.size) + " · length not chosen" : "Size not chosen"), "qty " + d.qty];
-    if (!editing) parts.push(d.method === "pickup" ? "Store pickup" : d.method === "ship" ? "Ship to me" : "method not chosen");
+    var parts = [esc(col.name), d.size && d.length ? esc(d.size + " " + d.length) : (d.size ? "Size " + esc(d.size) + " · Select a length" : "Select a size"), "Qty " + d.qty];
+    if (!editing) parts.push(d.method === "pickup" ? "Store Pickup" : d.method === "ship" ? "Ship to Me" : "Select delivery");
     var btnLabel = editing ? "Update item" : d.method === "pickup" ? "Choose a store" : "Add to bag";
 
     var secondary = editing
@@ -348,9 +348,6 @@
       '<p class="selection-summary" id="selection-summary" aria-live="polite"><span class="label">Your selection</span><strong>' + parts.join(" · ") + "</strong></p>" +
       '<button type="submit" class="btn btn-dark btn-block btn-lg" id="primary-action" data-action="submitProduct">' + icon("bag") + btnLabel + "</button>" +
       secondary +
-      '<ul class="pdp-perks">' +
-      "<li>" + icon("store") + "<div><strong>Free Store Pickup</strong><span>Choose Store pickup to see nearby stores and pickup dates</span></div></li>" +
-      "<li>" + icon("truck") + "<div><strong>Free Standard Shipping</strong><span>Ship to me arrives by " + esc(AE.SHIP_ESTIMATE) + "</span></div></li></ul>" +
       '<details class="pdp-details"><summary>The Details</summary><ul>' + p.details.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") +
       (p.style ? "<li>Style " + esc(p.style) + "</li>" : "") + "</ul></details>" +
       "</form></div></section>";
@@ -387,14 +384,14 @@
       '<div class="field float' + (ui.zipError ? " has-error" : "") + '">' +
       '<input id="zip-input" name="zip" inputmode="numeric" maxlength="5" autocomplete="postal-code" placeholder=" " value="' + esc(state.zip) + '"' +
       (ui.zipError ? ' aria-invalid="true" aria-describedby="zip-error"' : "") + ">" +
-      '<label for="zip-input">Zip Code</label></div>' +
+      '<label for="zip-input">ZIP Code</label></div>' +
       '<button type="submit" class="btn btn-dark" id="find-stores">Find stores</button></form>' +
       fieldError("zip-error", ui.zipError);
 
     var list = "";
     if (zipValid) {
       list = '<h2 class="stores-heading">Stores within 50 miles of ' + esc(state.zip) + ":</h2>" +
-        '<p class="muted small" id="store-results-status" tabindex="-1">Sample stores near ' + esc(state.zip) + ". Pickup is free.</p>" +
+        '<p class="muted small" id="store-results-status" tabindex="-1">Store Pickup is always free.</p>' +
         '<ul class="store-list">' + AE.STORES.map(function (st) {
           var blocked = AE.isStoreBlocked(state, st.id, item);
           var selected = pending === st.id && !blocked;
@@ -407,16 +404,16 @@
             action = '<button type="button" class="btn btn-outline btn-sm" id="store-' + st.id + '" data-action="selectStore" data-store="' + st.id + '">Use this store for pickup<span class="visually-hidden">: ' + esc(st.name) + "</span></button>";
           }
           return '<li class="store-row' + (selected ? " is-selected" : "") + (blocked ? " is-blocked" : "") + '" data-store-row="' + st.id + '">' +
-            '<p class="store-ready">' + (blocked ? "Can’t fulfill " + esc(AE.variantLabel(item)) : "Ready for pickup " + esc(st.date)) + "</p>" +
+            '<p class="store-ready">' + (blocked ? "Currently unavailable" : "Ready for pickup by <strong>" + esc(st.date) + "</strong>") + "</p>" +
             '<div class="store-main">' + storeBadge(st) + '<p class="store-name">' + esc(st.name) + "</p></div>" +
-            '<div class="store-foot"><p class="store-meta">' + esc(st.distance.replace(" mi", " miles")) + " away · <strong>Ready for pickup " + esc(st.date) + "</strong></p>" +
+            '<div class="store-foot"><p class="store-meta">' + esc(st.distance.replace(" mi", " miles")) + " away</p>" +
             '<div class="store-actions">' + action + "</div></div></li>";
         }).join("") + "</ul>";
     }
 
     var selectedStore = pending ? AE.getStore(pending) : null;
     var reason = selectedStore
-      ? '<p class="reason">Picking up at <strong>' + esc(selectedStore.name) + "</strong>, ready " + esc(selectedStore.date) + ".</p>"
+      ? '<p class="reason">Pickup at <strong>' + esc(selectedStore.name) + "</strong> · Ready " + esc(selectedStore.date) + "</p>"
       : '<p class="reason">' + (zipValid ? "Choose a store to continue." : "Enter your ZIP code to see nearby stores.") + "</p>";
 
     var footer = change
@@ -428,13 +425,13 @@
         '<button type="button" class="btn btn-dark" data-action="addPickupToBag" id="add-to-bag"' + (pending ? "" : " disabled") + ">Add to bag</button></div></div>";
 
     var intro = change
-      ? (switching ? "Choose a store to switch this item to free store pickup. Cancel keeps Ship to me." : "Choose a different pickup store. Your bag won’t change until you press Update store.")
-      : "Choosing a store doesn’t add anything to your bag. Press Add to bag when you’re ready.";
+      ? (switching ? "Choose a store to switch this item to Store Pickup. Cancel keeps Ship to Me." : "Choose a different pickup store. Your bag won’t change until you select Update store.")
+      : "Selecting a store doesn’t add the item to your bag. Select Add to bag when you’re ready.";
 
     return underlay(back) +
       '<div class="overlay-scrim" aria-hidden="true"></div>' +
       '<section class="modal" data-state="S3" role="dialog" aria-modal="true" aria-labelledby="h1">' +
-      '<div class="modal-head"><h1 id="h1">' + (change ? "Change pickup store" : "Choose a pickup store") + "</h1>" +
+      '<div class="modal-head"><h1 id="h1">' + (change ? "Change Pickup Store" : "Choose a Pickup Store") + "</h1>" +
       '<button type="button" class="icon-button modal-close" data-action="' + (change ? "cancelStoreChange" : "backToProduct") + '" aria-label="' + (change ? "Close and keep your current choice" : "Close and go back to the product") + '">' + icon("close") + "</button></div>" +
       '<div class="modal-body"><p class="modal-intro">' + intro + "</p>" + noticeHtml(state, "S3") + recap + zipForm + list + "</div>" +
       footer + "</section>";
@@ -448,10 +445,10 @@
     var back = state.draft.productId ? V.S2(Object.assign({}, state, { notice: null, bag: null }), {}) : homeView();
     var store = b.method === "pickup" ? AE.getStore(b.storeId) : null;
     var fulfil = b.method === "pickup"
-      ? '<div class="fulfil-card">' + (store ? storeBadge(store) : "") + "<div><p class=\"fulfil-title\">Store pickup · Free</p>" +
+      ? '<div class="fulfil-card">' + (store ? storeBadge(store) : "") + "<div><p class=\"fulfil-title\">Store Pickup · Free</p>" +
         "<p>" + (store ? esc(store.name) : "No store selected") + "</p>" +
         (store ? '<p class="fulfil-date">Ready for pickup ' + esc(store.date) + "</p>" : "") + "</div></div>"
-      : '<div class="fulfil-card">' + icon("truck", "fulfil-icon") + '<div><p class="fulfil-title">Ship to me · Free</p><p class="fulfil-date">Estimated delivery ' + esc(AE.SHIP_ESTIMATE) + "</p></div></div>";
+      : '<div class="fulfil-card">' + icon("truck", "fulfil-icon") + '<div><p class="fulfil-title">Ship to Me · Free</p><p class="fulfil-date">Estimated delivery ' + esc(AE.SHIP_ESTIMATE) + "</p></div></div>";
 
     return underlay(back) +
       '<div class="overlay-scrim" aria-hidden="true"></div>' +
@@ -464,8 +461,8 @@
       '<dl class="specs"><dt>Color:</dt><dd>' + esc(colorName(b)) + "</dd><dt>Size:</dt><dd>" + esc(b.size) + "</dd><dt>Length:</dt><dd>" + esc(b.length) + "</dd><dt>Qty:</dt><dd>" + b.qty + "</dd>" +
       (b.qty > 1 ? "<dt>Each:</dt><dd>" + AE.money(l.unitSale) + "</dd>" : "") + "</dl></div></div>" +
       fulfil +
-      '<div class="drawer-actions"><button type="button" class="btn btn-outline" data-action="keepShopping" id="keep-shopping">Keep Shopping</button>' +
-      '<button type="button" class="btn btn-dark" data-action="viewBag" id="view-bag">View Bag</button></div>' +
+      '<div class="drawer-actions"><button type="button" class="btn btn-outline" data-action="keepShopping" id="keep-shopping">Keep shopping</button>' +
+      '<button type="button" class="btn btn-dark" data-action="viewBag" id="view-bag">View bag</button></div>' +
       "</div></section>";
   };
 
@@ -478,8 +475,8 @@
 
   function deliveryToggle(b) {
     return '<div class="delivery-toggle" role="group" aria-label="Delivery method">' +
-      '<button type="button" id="seg-ship" data-action="methodShip" aria-pressed="' + (b.method === "ship") + '">' + (b.method === "ship" ? icon("check", "seg-check") : "") + "Ship To Me</button>" +
-      '<button type="button" id="seg-pickup" data-action="methodPickup" aria-pressed="' + (b.method === "pickup") + '">' + (b.method === "pickup" ? icon("check", "seg-check") : "") + "Free Store Pickup</button></div>";
+      '<button type="button" id="seg-ship" data-action="methodShip" aria-pressed="' + (b.method === "ship") + '">' + (b.method === "ship" ? icon("check", "seg-check") : "") + "Ship to Me</button>" +
+      '<button type="button" id="seg-pickup" data-action="methodPickup" aria-pressed="' + (b.method === "pickup") + '">' + (b.method === "pickup" ? icon("check", "seg-check") : "") + "Store Pickup</button></div>";
   }
 
   V.S5 = function (state) {
@@ -487,8 +484,8 @@
     if (!b) {
       return '<section class="bag-page wrap" data-state="S5" aria-labelledby="h1">' +
         '<h1 id="h1" class="page-title">Shopping Bag</h1>' + noticeHtml(state, "S5") +
-        '<div class="empty-bag"><p>Your bag is empty.</p>' +
-        '<button type="button" class="btn btn-dark" data-action="goSearch" id="go-search">Search for jeans</button></div></section>';
+        '<div class="empty-bag"><p>Your Shopping Bag is empty.</p>' +
+        '<button type="button" class="btn btn-dark" data-action="goSearch" id="go-search">Continue shopping</button></div></section>';
     }
     var store = b.method === "pickup" ? AE.getStore(b.storeId) : null;
     var needsStore = b.method === "pickup" && !store;
@@ -497,7 +494,7 @@
     var summary = '<section class="bag-summary" aria-labelledby="summary-h">' +
       '<h2 id="summary-h" class="section-title">Order Summary</h2>' +
       '<div class="summary-box">' + summaryLines(b) +
-      '<button type="button" class="btn btn-blue btn-block btn-lg" data-action="goCheckout" id="checkout-button"' + (needsStore ? ' disabled aria-describedby="checkout-reason"' : "") + ">Let’s Check Out <span class=\"chev\" aria-hidden=\"true\">›</span></button>" +
+      '<button type="button" class="btn btn-blue btn-block btn-lg" data-action="goCheckout" id="checkout-button"' + (needsStore ? ' disabled aria-describedby="checkout-reason"' : "") + ">Checkout</button>" +
       (needsStore ? '<p class="checkout-reason" id="checkout-reason">' + icon("alert") + "Choose a store to continue.</p>" : "") +
       '<div class="summary-context">' + (b.method === "pickup" ? icon("store") : icon("truck")) + "<div>" +
       "<p><strong>" + (b.method === "pickup" ? "Store Pickup" : "Ship to Me") + "</strong></p>" +
@@ -524,13 +521,13 @@
 
     var detail;
     if (b.method === "ship") {
-      detail = '<div class="pickup-card">' + icon("truck", "fulfil-icon") + '<div class="pickup-card-body"><p class="pickup-ready">Ship to Me · Free standard shipping</p>' +
+      detail = '<div class="pickup-card">' + icon("truck", "fulfil-icon") + '<div class="pickup-card-body"><p class="pickup-ready">Free standard shipping</p>' +
         '<p class="pickup-store">Estimated delivery ' + esc(AE.SHIP_ESTIMATE) + "</p></div></div>";
     } else if (store) {
       detail = '<div class="pickup-card"><div class="pickup-card-body">' +
         '<p class="pickup-ready">1 item will be ready by <strong>' + esc(store.date) + "</strong>:</p>" +
         '<div class="store-main">' + storeBadge(store) + '<p class="pickup-store">' + esc(store.name) + "</p></div>" +
-        '<div class="store-foot"><p class="store-meta">' + esc(store.distance.replace(" mi", " miles")) + " away · Ready for pickup " + esc(store.date) + " · Free</p>" +
+        '<div class="store-foot"><p class="store-meta">' + esc(store.distance.replace(" mi", " miles")) + " away · Free</p>" +
         '<button type="button" class="btn btn-outline btn-sm" data-action="changeStore" id="change-store">Change store</button></div></div></div>';
     } else {
       detail = '<div class="pickup-card missing">' + icon("alert", "warn-icon") + '<div class="pickup-card-body"><p class="pickup-store">No pickup store selected.</p>' +
@@ -580,7 +577,7 @@
       '<dl class="kv">' + fulfilmentRows(b) + "</dl>" +
       '<h2 class="section-title">Order Summary</h2>' +
       '<div class="summary-box">' + summaryLines(b, { totalLabel: "Order Total:" }) + (button || "") +
-      '<p class="charge-note">Simulated checkout: no card is charged and no order is sent.</p></div>' +
+      '<p class="charge-note">Simulated checkout. No card is charged and no order is sent.</p></div>' +
       '<button type="button" class="link-button" data-action="backToBag" id="back-to-bag-summary">Edit in bag</button>' +
       "</section>";
   }
@@ -616,13 +613,12 @@
         '<div class="field-grid">' + fields.contact.slice(3).map(function (f) { return inputField(state, f, ui); }).join("") + "</div>";
 
     var form = '<form class="co-form" id="checkout-form" data-form="checkout" novalidate aria-labelledby="h1">' +
-      notReserved() +
       '<div class="fictional-note">' + icon("info") + "<p>Use fictional details. Don’t enter real personal or payment information.</p>" +
       '<button type="button" class="link-button" data-action="fillSample" id="fill-sample">Use sample details</button></div>' +
       delivery +
       '<fieldset class="form-section"><legend class="section-title">' + (b.method === "pickup" ? "Pickup Person" : "Shipping Address") + "</legend>" +
       contactFields + "</fieldset>" +
-      '<fieldset class="form-section"><legend class="section-title">Payment (simulated card)</legend>' +
+      '<fieldset class="form-section"><legend class="section-title">Payment (Simulated)</legend>' +
       inputField(state, fields.payment[0], ui) +
       '<div class="field-grid two">' + inputField(state, fields.payment[1], ui) + inputField(state, fields.payment[2], ui) + "</div>" +
       "</fieldset></form>";
@@ -649,9 +645,9 @@
     var alternatives = AE.STORES.filter(function (st) { return !AE.isStoreBlocked(state, st.id, b); });
     var altList = '<ul class="store-list alt-stores">' + alternatives.map(function (st) {
       return '<li class="store-row" data-store-row="' + st.id + '">' +
-        '<p class="store-ready">Ready for pickup by ' + esc(st.date) + ":</p>" +
+        '<p class="store-ready">Ready for pickup by <strong>' + esc(st.date) + "</strong></p>" +
         '<div class="store-main">' + storeBadge(st) + '<p class="store-name">' + esc(st.name) + "</p></div>" +
-        '<div class="store-foot"><p class="store-meta">' + esc(st.distance.replace(" mi", " miles")) + " away · <strong>Ready for pickup " + esc(st.date) + "</strong></p>" +
+        '<div class="store-foot"><p class="store-meta">' + esc(st.distance.replace(" mi", " miles")) + " away</p>" +
         '<div class="store-actions"><button type="button" class="btn btn-dark btn-sm" id="alt-' + st.id + '" data-action="chooseReplacement" data-store="' + st.id + '">Use this store for pickup<span class="visually-hidden">: ' + esc(st.name) + "</span></button></div></div></li>";
     }).join("") + "</ul>";
 
@@ -672,7 +668,7 @@
       '<div class="secondary-links"><button type="button" class="link-button" data-action="returnToBag" id="return-to-bag">Return to bag</button></div></div>' +
       '<section class="co-summary" aria-labelledby="saved-h"><h2 id="saved-h" class="section-title">Saved for you</h2>' +
       checkoutItem(b) +
-      '<dl class="kv"><dt>Method</dt><dd>Store pickup (free)</dd><dt>Total</dt><dd>' + AE.money(AE.priceLines(b).total) + "</dd></dl>" +
+      '<dl class="kv"><dt>Delivery</dt><dd>Store Pickup · Free</dd><dt>Order Total</dt><dd>' + AE.money(AE.priceLines(b).total) + "</dd></dl>" +
       '<h3 class="sub-title">Your details</h3>' + details + "</section></div></section>";
   };
 
@@ -682,14 +678,14 @@
     var o = state.order, s = o.snapshot;
     var item = { productId: s.productId, colorId: s.colorId };
     var fulfil = s.method === "pickup"
-      ? "<dt>Method</dt><dd>Store pickup (free)</dd><dt>Pickup store</dt><dd>" + esc(s.storeName) + "</dd><dt>Pickup date</dt><dd>Ready " + esc(s.pickupDate) + "</dd>"
-      : "<dt>Method</dt><dd>Ship to me (free)</dd><dt>Estimated delivery</dt><dd>" + esc(s.shipEstimate) + "</dd>";
+      ? "<dt>Delivery</dt><dd>Store Pickup · Free</dd><dt>Pickup store</dt><dd>" + esc(s.storeName) + "</dd><dt>Pickup date</dt><dd>Ready " + esc(s.pickupDate) + "</dd>"
+      : "<dt>Delivery</dt><dd>Ship to Me · Free</dd><dt>Estimated delivery</dt><dd>" + esc(s.shipEstimate) + "</dd>";
     var lines = s.lines;
     return '<section class="confirm-page wrap" data-state="S8" aria-labelledby="h1">' +
       '<div class="confirm-head">' + icon("check", "confirm-check") +
       '<div><h1 id="h1" class="page-title">Order placed (simulated)</h1>' +
       '<p class="order-number">Order number <strong data-testid="order-number">' + esc(o.number) + "</strong></p></div></div>" +
-      '<div class="notice notice-info sim-note">' + icon("info") + "<p><strong>No real order or payment was made.</strong> This is a simulated academic prototype; nothing was charged, reserved or shipped.</p></div>" +
+      '<div class="notice notice-info sim-note">' + icon("info") + "<p><strong>No real order or payment was made.</strong> Nothing was charged, reserved or shipped.</p></div>" +
       '<div class="two-col"><div class="col-main">' +
       '<h2 class="section-title">' + (s.method === "pickup" ? "Pickup Details" : "Delivery Details") + "</h2>" +
       '<div class="co-item">' + '<span class="tile-media">' + img(item, "f", "co-img", "") + "</span>" +
@@ -705,9 +701,9 @@
       '<div class="summary-box"><dl class="summary-lines">' +
       "<dt>Merchandise:</dt><dd>" + AE.money(lines.merch) + "</dd>" +
       '<dt>Savings:</dt><dd class="saving">' + AE.money(-lines.savings) + "</dd>" +
-      "<dt>" + (s.method === "pickup" ? "Store pickup:" : "Shipping:") + "</dt><dd>Free</dd>" +
+      "<dt>" + (s.method === "pickup" ? "Store Pickup:" : "Shipping:") + "</dt><dd>Free</dd>" +
       "<dt>Estimated tax (simulated):</dt><dd>" + AE.money(lines.tax) + "</dd>" +
-      '<dt class="total">Total:</dt><dd class="total" data-testid="order-total">' + AE.money(lines.total) + "</dd></dl>" +
+      '<dt class="total">Order Total:</dt><dd class="total" data-testid="order-total">' + AE.money(lines.total) + "</dd></dl>" +
       '<button type="button" class="btn btn-dark btn-block btn-lg" data-action="startOver" id="start-over">Start over</button></div></section>' +
       "</div></section>";
   };

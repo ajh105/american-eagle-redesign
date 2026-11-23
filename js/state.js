@@ -88,9 +88,9 @@
   AE.validateDraft = function (draft, requireMethod) {
     var errs = [];
     if (!draft.size) errs.push({ field: "size", message: "Choose a size." });
-    if (!draft.length) errs.push({ field: "length", message: draft.size ? "Choose a length." : "Choose a length (pick a size first)." });
+    if (!draft.length) errs.push({ field: "length", message: draft.size ? "Choose a length." : "Choose a size first, then a length." });
     else if (draft.size && !AE.isLengthAvailable(draft.size, draft.length)) errs.push({ field: "length", message: "That length isn't available in size " + draft.size + "." });
-    if (requireMethod && !draft.method) errs.push({ field: "method", message: "Choose Store pickup or Ship to me." });
+    if (requireMethod && !draft.method) errs.push({ field: "method", message: "Choose Store Pickup or Ship to Me." });
     return errs;
   };
 
@@ -99,7 +99,7 @@
   AE.checkoutFields = function (method) {
     var contact = method === "pickup"
       ? [
-          { id: "name", group: "checkout", label: "Pickup person full name", autocomplete: "name" },
+          { id: "name", group: "checkout", label: "Full name", autocomplete: "name" },
           { id: "email", group: "checkout", label: "Email", type: "email", autocomplete: "email" },
           { id: "phone", group: "checkout", label: "Phone", type: "tel", autocomplete: "tel" }
         ]
@@ -112,8 +112,8 @@
           { id: "zip", group: "checkout", label: "ZIP code", hint: "5 digits", autocomplete: "postal-code", inputmode: "numeric" }
         ];
     var payment = [
-      { id: "cardNumber", group: "payment", label: "Simulated card number", hint: "12–19 digits", inputmode: "numeric" },
-      { id: "exp", group: "payment", label: "Expiry (MM/YY)", hint: "MM/YY", inputmode: "numeric" },
+      { id: "cardNumber", group: "payment", label: "Card number", hint: "Use a fictional number (12–19 digits)", inputmode: "numeric" },
+      { id: "exp", group: "payment", label: "Expiration (MM/YY)", inputmode: "numeric" },
       { id: "cvv", group: "payment", label: "CVV", hint: "3–4 digits", inputmode: "numeric" }
     ];
     return { contact: contact, payment: payment, all: contact.concat(payment) };
@@ -132,10 +132,10 @@
       case "state": return /^[A-Za-z]{2}$/.test(v) ? null : (v ? "Use a 2-letter state, e.g. AZ." : "Enter a state.");
       case "zip": return /^\d{5}$/.test(v) ? null : (v ? "ZIP code must be 5 digits." : "Enter a ZIP code.");
       case "cardNumber":
-        return /^[\d ]+$/.test(v) && v.replace(/ /g, "").length >= 12 && v.replace(/ /g, "").length <= 19 ? null : (v ? "Card number must be 12–19 digits." : "Enter a simulated card number.");
+        return /^[\d ]+$/.test(v) && v.replace(/ /g, "").length >= 12 && v.replace(/ /g, "").length <= 19 ? null : (v ? "Card number must be 12–19 digits." : "Enter a card number.");
       case "exp":
         var m = /^(\d{2})\/(\d{2})$/.exec(v);
-        return m && +m[1] >= 1 && +m[1] <= 12 ? null : (v ? "Use MM/YY, e.g. 12/30." : "Enter an expiry date.");
+        return m && +m[1] >= 1 && +m[1] <= 12 ? null : (v ? "Use MM/YY, e.g. 12/30." : "Enter an expiration date.");
       case "cvv": return /^\d{3,4}$/.test(v) ? null : (v ? "CVV must be 3 or 4 digits." : "Enter a CVV.");
     }
     return null;
@@ -334,7 +334,7 @@
     s.editing = false;
     s.notice = msg
       ? { route: "S5", kind: "warning", text: msg }
-      : { route: "S5", kind: "success", text: "Item updated: " + AE.variantLabel(s.bag) + ", qty " + s.bag.qty + "." };
+      : { route: "S5", kind: "success", text: "Item updated: " + AE.variantLabel(s.bag) + ", Qty " + s.bag.qty + "." };
     if (msg) s.recovery.message = null;
     s.route = "S5";
     return s;
@@ -349,14 +349,14 @@
     s.bag.method = "ship";
     s.bag.storeId = null;
     s.recovery.message = null;
-    s.notice = { route: "S5", kind: "info", text: "Switched to Ship to me. Estimated delivery " + AE.SHIP_ESTIMATE + "." };
+    s.notice = { route: "S5", kind: "info", text: "Switched to Ship to Me. Estimated delivery " + AE.SHIP_ESTIMATE + "." };
     return s;
   };
   A.removeItem = function (s) {
     // Keeps recoveryUsed and recovery.blocked for the whole session.
     s.bag = null;
     s.draft = emptyDraft();
-    s.notice = { route: "S5", kind: "info", text: "Item removed from your bag." };
+    s.notice = { route: "S5", kind: "info", text: "Item removed from your Shopping Bag." };
     return s;
   };
   A.goCheckout = function (s) {
@@ -440,7 +440,7 @@
     // Pickup stays the intended method; the unavailable store and its date stay cleared.
     s.recovery.active = false;
     if (s.bag) { s.bag.method = "pickup"; s.bag.storeId = null; }
-    s.notice = { route: "S5", kind: "warning", text: "Pickup is still your method. Choose a new store to continue to checkout." };
+    s.notice = { route: "S5", kind: "warning", text: "Store Pickup is still selected. Choose a new store to continue to checkout." };
     s.route = "S5";
     return s;
   };

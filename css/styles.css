@@ -101,14 +101,12 @@ img { max-width: 100%; display: block; }
 .checkout-header { border-bottom: 1px solid var(--line-faint); }
 .checkout-header-inner { display: flex; align-items: center; justify-content: space-between; height: 88px; }
 .wordmark-small { font-size: 15px; letter-spacing: 0.3em; color: var(--navy); font-weight: var(--medium); }
-.secure { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--gray); }
 
 main { flex: 1; outline: none; padding-bottom: 64px; }
 
 /* ---- Footer ---- */
 .site-footer { background: var(--brand-bar); color: var(--gray); font-size: 11px; }
 .footer-inner { display: flex; justify-content: space-between; gap: 16px; padding-top: 16px; padding-bottom: 16px; flex-wrap: wrap; }
-.version { font-weight: 700; color: var(--ink); }
 
 /* ---- Buttons ---- */
 .btn {
@@ -280,11 +278,6 @@ fieldset.pdp-row .row-body { margin-left: 78px; }
 .selection-summary .label { display: block; font-size: 11px; color: var(--gray); }
 .selection-summary strong { font-weight: var(--demi); }
 .secondary-links { margin-top: 10px; text-align: center; }
-.pdp-perks { list-style: none; padding: 20px 0 0; margin: 22px 0 0; border-top: 1px solid var(--line-input); display: grid; gap: 16px; }
-.pdp-perks li { display: flex; gap: 14px; align-items: flex-start; font-size: 12px; }
-.pdp-perks .icon { width: 30px; height: 30px; padding: 5px; border-radius: 50%; background: var(--line-faint); }
-.pdp-perks strong { display: block; font-weight: var(--demi); }
-.pdp-perks span { color: var(--gray); }
 .pdp-details { border-top: 1px solid var(--line-input); margin-top: 22px; }
 .pdp-details summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; padding: 20px 0; font-size: 16px; font-weight: var(--demi); }
 .pdp-details summary::-webkit-details-marker { display: none; }
@@ -556,7 +549,6 @@ fieldset.pdp-row .row-body { margin-left: 78px; }
 .summary-lines .saving-note { grid-column: 1 / -1; text-align: left; padding: 0; color: var(--green); font-weight: var(--demi); font-size: 14px; margin-top: -4px; }
 .summary-lines dt.total { font-size: 14px; }
 .not-reserved { background: var(--line-faint); border-radius: 15px; color: var(--blue); font-size: 13px; font-weight: var(--demi); text-align: center; padding: 5px 12px; margin: 0 0 20px; }
-.chev { font-size: 20px; line-height: 1; margin-left: 4px; }
 .charge-note { font-size: 11px; color: var(--gray); text-align: center; margin-top: 12px; }
 .pickup-note { font-size: 12px; color: var(--gray); margin: -6px 0 22px; }
 .line-links .link-button { font-size: 11px; }
