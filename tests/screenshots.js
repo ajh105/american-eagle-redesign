@@ -16,13 +16,16 @@ fs.mkdirSync(OUT, { recursive: true });
   const page = await browser.newPage({ viewport: { width: WIDTH, height: 900 }, deviceScaleFactor: 2 });
   const shot = async (name) => {
     await page.evaluate(() => document.activeElement && document.activeElement.blur());
-    await page.screenshot({ path: path.join(OUT, name + ".png"), fullPage: true });
+    // Overlay states (S3 modal, S4 drawer) are captured at viewport size so the overlay is framed correctly.
+    const overlay = await page.evaluate(() => document.body.classList.contains("overlay-open"));
+    await page.screenshot({ path: path.join(OUT, name + ".jpg"), type: "jpeg", quality: 88, fullPage: !overlay });
     console.log("saved " + name);
   };
   await page.goto(BASE + "#/s1");
   await page.evaluate(() => sessionStorage.clear());
   await page.reload();
 
+  await shot("S1a-homepage");
   await page.fill("#search-input", "baggy wide-leg");
   await page.click("#search-button");
   await shot("S1-product-search");
@@ -60,6 +63,8 @@ fs.mkdirSync(OUT, { recursive: true });
 
   // Supporting states
   await page.click("#start-over");
+  await page.fill("#search-input", "baggy wide-leg");
+  await page.click("#search-button");
   await page.click("#card-c3");
   await page.click('label[for="size-10"]');
   await page.click("#primary-action");

@@ -17,6 +17,10 @@
   function emptyPayment() {
     return { cardNumber: "", exp: "", cvv: "" };
   }
+  function emptySearch() {
+    // view: "home" (S1 landing) or "results" (S1 search/category results). Both are S1.
+    return { query: "", view: "home", category: null, sort: "featured", fits: [], colors: [] };
+  }
   function emptyDraft() {
     return { productId: null, colorId: null, size: null, length: null, qty: 1, method: null, storeId: null };
   }
@@ -24,7 +28,7 @@
   AE.initialState = function () {
     return {
       route: "S1",
-      search: { query: "" },
+      search: emptySearch(),
       zip: "",                    // last valid ZIP searched on S3
       draft: emptyDraft(),        // S2 selection in progress (+ storeId chosen on S3 in add mode)
       bag: null,                  // single line item [DESIGN]
@@ -164,7 +168,39 @@
     return s;
   };
 
-  A.setSearch = function (s, a) { s.search.query = a.query; return s; };
+  /** Header search (available on S1–S5): show results for the query on S1. */
+  A.runSearch = function (s, a) {
+    s.search = emptySearch();
+    s.search.query = String(a.query || "").trim();
+    s.search.view = "results";
+    s.editing = false;
+    s.route = "S1";
+    return s;
+  };
+  A.setSearch = A.runSearch;
+  A.openCategory = function (s, a) {
+    if (!AE.getCategory(a.id)) return s;
+    s.search = emptySearch();
+    s.search.view = "results";
+    s.search.category = a.id;
+    s.editing = false;
+    s.route = "S1";
+    return s;
+  };
+  A.goHome = function (s) {
+    s.search.view = "home";
+    s.editing = false;
+    s.route = "S1";
+    return s;
+  };
+  A.setSort = function (s, a) { s.search.sort = a.sort; return s; };
+  A.toggleFilter = function (s, a) {
+    var list = a.kind === "fit" ? s.search.fits : s.search.colors;
+    var i = list.indexOf(a.value);
+    if (i >= 0) list.splice(i, 1); else list.push(a.value);
+    return s;
+  };
+  A.clearFilters = function (s) { s.search.fits = []; s.search.colors = []; return s; };
 
   // S1 -> S2
   A.openCard = function (s, a) {
@@ -197,6 +233,7 @@
     return s;
   };
   A.setDraftQty = function (s, a) { s.draft.qty = Math.max(1, Math.min(5, a.qty | 0)); return s; };
+  A.draftQtyStep = function (s, a) { s.draft.qty = Math.max(1, Math.min(5, s.draft.qty + (a.delta | 0))); return s; };
   A.setDraftMethod = function (s, a) { s.draft.method = a.method; return s; };
 
   // S2 -> S3 (pickup)
@@ -267,6 +304,14 @@
   // S4
   A.viewBag = function (s) { s.route = "S5"; return s; };
   A.keepShopping = function (s) { s.draft = emptyDraft(); s.route = "S1"; return s; };
+  /** S2 "back to results": like Keep shopping, but always lands on the results view. */
+  A.backToResults = function (s) {
+    s.draft = emptyDraft();
+    if (!s.search.category && !s.search.query) s.search.category = "jeans";
+    s.search.view = "results";
+    s.route = "S1";
+    return s;
+  };
 
   // S5
   A.editItem = function (s) {
@@ -436,6 +481,7 @@
         if (k !== "payment" && saved[k] !== undefined) base[k] = saved[k];
       });
       base.checkout = Object.assign(emptyCheckout(), base.checkout || {});
+      base.search = Object.assign(emptySearch(), base.search || {});
       base.draft = Object.assign(emptyDraft(), base.draft || {});
       base.recovery = Object.assign({ active: false, blocked: null, message: null }, base.recovery || {});
       base.storeChange = Object.assign({ pendingStoreId: null, prev: null }, base.storeChange || {});

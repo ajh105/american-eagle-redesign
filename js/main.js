@@ -48,8 +48,16 @@
     var activeId = document.activeElement && document.activeElement.id;
     var scrollY = window.scrollY;
 
+    var header = document.getElementById("site-header");
+    header.innerHTML = AE.views.header(state);
     main.innerHTML = AE.views.render(state, ui);
     main.setAttribute("data-state", state.route);
+    // S3 (store modal) and S4 (bag drawer) sit on top of another page: keep focus inside them.
+    var overlay = AE.views.isOverlay(state);
+    syncBannerHeight();
+    document.body.classList.toggle("overlay-open", overlay);
+    header.inert = overlay;
+    document.querySelector(".site-footer").inert = overlay;
     document.getElementById("footer-state").textContent = "Screen " + state.route;
     document.title = AE.views.title(state) + " – AE Pickup Prototype";
 
@@ -83,6 +91,13 @@
     }
     lastAnnounced = text;
   }
+
+  /** Overlays start below the academic notice bar, whose height changes as it wraps. */
+  function syncBannerHeight() {
+    var b = document.querySelector(".demo-banner");
+    if (b) document.documentElement.style.setProperty("--banner-h", b.offsetHeight + "px");
+  }
+  window.addEventListener("resize", syncBannerHeight);
 
   function focusHeading(preventScroll) {
     var h1 = document.querySelector("#main h1");
@@ -194,7 +209,13 @@
         return;
       case "openCard": dispatch("openCard", { cardId: el.getAttribute("data-card") }); return;
       case "submitProduct": ev.preventDefault(); submitProduct(); return;
-      case "backToResults": dispatch("keepShopping"); return;
+      case "backToResults": dispatch("backToResults"); return;
+      case "goHome": dispatch("goHome"); return;
+      case "openCategory": dispatch("openCategory", { id: el.getAttribute("data-category") }); return;
+      case "runSearch": dispatch("runSearch", { query: el.getAttribute("data-query") }); return;
+      case "clearFilters": dispatch("clearFilters"); focusHeading(true); return;
+      case "draftQtyDown": dispatch("draftQtyStep", { delta: -1 }); return;
+      case "draftQtyUp": dispatch("draftQtyStep", { delta: 1 }); return;
       case "cancelEdit": dispatch("cancelEdit"); return;
       case "selectStore": dispatch("selectStore", { storeId: el.getAttribute("data-store") }); return;
       case "addPickupToBag": dispatch("addPickupToBag"); return;
@@ -257,6 +278,9 @@
         dispatch("setDraftLength", { length: t.value });
         break;
       case "qty": dispatch("setDraftQty", { qty: parseInt(t.value, 10) }); break;
+      case "sort": dispatch("setSort", { sort: t.value }); break;
+      case "filter-fit": dispatch("toggleFilter", { kind: "fit", value: t.value }); break;
+      case "filter-color": dispatch("toggleFilter", { kind: "color", value: t.value }); break;
       case "method":
         delete ui.errors.method;
         dispatch("setDraftMethod", { method: t.value });
@@ -280,12 +304,19 @@
     ev.preventDefault();
     if (kind === "search") {
       var q = form.querySelector("#search-input").value;
-      dispatch("setSearch", { query: q });
+      dispatch("runSearch", { query: q });
       var status = document.getElementById("results-status");
       if (status) status.focus();
     } else if (kind === "zip") submitZip(form);
     else if (kind === "product") submitProduct();
     else if (kind === "checkout") submitCheckout();
+  });
+
+  // Escape closes the store overlay the same way its Back / Cancel button does.
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Escape" || state.route !== "S3") return;
+    ev.preventDefault();
+    dispatch(state.storeMode === "change" ? "cancelStoreChange" : "backToProduct");
   });
 
   // ---- Boot -------------------------------------------------------------------

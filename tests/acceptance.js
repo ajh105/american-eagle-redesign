@@ -36,10 +36,19 @@ async function search(page, q) {
   await page.fill("#search-input", q);
   await page.click("#search-button");
 }
+/** S2 quantity is a stepper (visual refinement); step it to the target value. */
+async function setDraftQty(page, qty) {
+  for (let i = 0; i < 6; i++) {
+    const cur = parseInt(await page.textContent("#draft-qty"), 10);
+    if (cur === qty) return;
+    await page.click(cur < qty ? "#draft-qty-up" : "#draft-qty-down");
+  }
+  throw new Error("Could not set quantity to " + qty);
+}
 async function selectOptions(page, { size = "10", length = "long", method = "pickup", qty } = {}) {
   if (size) await page.click(`label[for="size-${size}"]`);
   if (length) await page.click(`label[for="len-${length}"]`);
-  if (qty) await page.selectOption("#qty-select", String(qty));
+  if (qty) await setDraftQty(page, qty);
   if (method) await page.click(`label[for="method-${method}"]`);
 }
 async function findStores(page, zip = "85392") {
@@ -95,7 +104,7 @@ async function editItem(page, changes) {
   assert.strictEqual(await page.$("#method-pickup"), null, "method hidden in edit mode");
   if (changes.size) await page.click(`label[for="size-${changes.size}"]`);
   if (changes.length) await page.click(`label[for="len-${changes.length}"]`);
-  if (changes.qty) await page.selectOption("#qty-select", String(changes.qty));
+  if (changes.qty) await setDraftQty(page, changes.qty);
   await page.click("#primary-action");
   await expectState(page, "S5");
 }
@@ -184,6 +193,7 @@ async function test(num, name, page, fn) {
   });
 
   await test(3, "Size and length dependencies", page, async (p) => {
+    await search(p, "baggy wide-leg"); // S1 now lands on the homepage
     await p.click("#card-c3");
     assert.ok(await p.isDisabled("#len-long"), "Length disabled until size chosen");
     await p.click('label[for="size-10"]');
@@ -202,6 +212,7 @@ async function test(num, name, page, fn) {
   });
 
   await test(4, "Method required: inline error and focus", page, async (p) => {
+    await search(p, "baggy wide-leg"); // S1 now lands on the homepage
     await p.click("#card-c3");
     await selectOptions(p, { size: "10", length: "long", method: null });
     await p.click("#primary-action");
@@ -209,6 +220,7 @@ async function test(num, name, page, fn) {
     assert.ok((await mainText(p)).includes("Choose Store pickup or Ship to me."));
     assert.strictEqual(await p.evaluate(() => document.activeElement.id), "method-pickup");
     await fresh(p);
+    await search(p, "baggy wide-leg"); // S1 now lands on the homepage
     await p.click("#card-c3");
     await p.click("#primary-action");
     assert.ok((await mainText(p)).includes("Choose a size."));
@@ -411,6 +423,8 @@ async function test(num, name, page, fn) {
       assert.strictEqual(saved.recovery.blocked, null);
       assert.strictEqual(saved.checkout.name, "");
       assert.strictEqual(await p.$(".bag-link"), null);
+      assert.strictEqual(await p.$("#header-bag-count"), null, "bag badge hidden when empty");
+      assert.strictEqual(await p.$(".result-card"), null, "reset lands on the S1 homepage");
     }
     // After reset the planned failure happens again
     await pickupToBag(p, "westgate");
@@ -504,6 +518,73 @@ async function test(num, name, page, fn) {
     await expectState(p, "S1");
     p.off("request", onReq);
     assert.deepStrictEqual(remote, [], "no remote requests");
+  });
+
+
+  await test(14, "S1 homepage → results, category nav, filters, sort; overlays keep the academic notice", page, async (p) => {
+    // Landing: realistic homepage, no results grid yet
+    assert.strictEqual(await p.$(".result-card"), null, "no results on landing");
+    assert.strictEqual((await text(p, "h1")).trim(), "The Baggy Edit");
+    assert.ok((await text(p, ".demo-banner")).includes("Not affiliated with or endorsed by American Eagle Outfitters"));
+    // Category navigation
+    await p.click("#nav-jeans");
+    await expectState(p, "S1");
+    assert.strictEqual(await p.$$eval(".result-card", (e) => e.length), 5);
+    await p.click('label:has(#fit-filter-curvy)');
+    assert.deepStrictEqual(await p.$$eval(".result-card", (e) => e.map((x) => x.id)), ["card-c5"]);
+    await p.click("#clear-filters");
+    await p.click('label:has(#color-filter-medium-bright-indigo)');
+    assert.deepStrictEqual(await p.$$eval(".result-card", (e) => e.map((x) => x.id)), ["card-c3"]);
+    await p.click("#clear-filters");
+    await p.click('label:has(#sort-price-asc)');
+    assert.deepStrictEqual(await p.$$eval(".result-card", (e) => e.map((x) => x.id)), ["card-c1", "card-c2", "card-c3", "card-c4", "card-c5"]);
+    await p.click('label:has(#sort-price-desc)');
+    assert.strictEqual(await p.$eval(".result-card", (e) => e.id), "card-c5");
+    // Out-of-scope category explains itself (no dead control)
+    await p.click("#nav-men");
+    assert.ok((await mainText(p)).includes("only includes a small selection of women"));
+    await p.click("#shop-jeans");
+    assert.strictEqual(await p.$$eval(".result-card", (e) => e.length), 5);
+    // Logo returns to the homepage
+    await p.click("#logo-home");
+    assert.strictEqual(await p.$(".result-card"), null);
+    // Header search from the bag keeps the bag
+    await pickupToBag(p, "westgate");
+    await search(p, "0437");
+    await expectState(p, "S1");
+    assert.strictEqual(await p.$$eval(".result-card", (e) => e.length), 3);
+    assert.strictEqual((await text(p, "#header-bag-count")).trim(), "1");
+    // S3 overlay: Escape = Back, selections preserved; notice stays visible above overlays
+    await p.click("#card-c3");
+    await selectOptions(p, {});
+    await p.click("#primary-action");
+    await expectState(p, "S3");
+    const bannerOnTop = () => p.evaluate(() => { const b = document.querySelector(".demo-banner"); const r = b.getBoundingClientRect(); const el = document.elementFromPoint(r.left + 40, r.top + r.height / 2); return b.contains(el); });
+    assert.ok(await bannerOnTop(), "notice visible above the store overlay");
+    assert.ok(await p.evaluate(() => document.getElementById("site-header").inert), "header inert behind modal");
+    await p.keyboard.press("Escape");
+    await expectState(p, "S2");
+    assert.ok(await p.isChecked("#size-10") && await p.isChecked("#len-long") && await p.isChecked("#method-pickup"));
+    await p.click("#primary-action");
+    await p.click("#store-aerie");
+    await p.click("#add-to-bag");
+    await expectState(p, "S4");
+    assert.ok(await bannerOnTop(), "notice visible above the bag drawer");
+    await p.click(".banner-reset");
+    await expectState(p, "S1");
+  });
+
+
+  await test(15, "Bag badge counts distinct items (not quantity) and hides when empty", page, async (p) => {
+    assert.strictEqual(await p.$("#header-bag-count"), null, "no badge with an empty bag");
+    await pickupToBag(p, "westgate", { qty: 3 });
+    assert.strictEqual((await text(p, "#header-bag-count")).trim(), "1", "qty 3 of one item shows 1");
+    assert.strictEqual(await p.getAttribute("#header-bag", "aria-label"), "Shopping bag, 1 item");
+    await p.click("#qty-down");
+    assert.strictEqual((await text(p, "#header-bag-count")).trim(), "1");
+    await p.click("#remove-item");
+    assert.strictEqual(await p.$("#header-bag-count"), null, "badge hidden after Remove");
+    assert.strictEqual(await p.getAttribute("#header-bag", "aria-label"), "Shopping bag, 0 items");
   });
 
   // Console errors across the whole run
